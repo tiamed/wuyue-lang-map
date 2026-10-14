@@ -1,7 +1,7 @@
 {
   "meta": {
-    "version": "0.5.2",
-    "note": "v0.5：六片改为地级行政轮廓聚合；城市层附 cityOutlines 真实边界；仍非精确同言线；v0.5.1 江南风配色；v0.5.2 交互：shortTip、eras.focusCityIds",
+    "version": "0.5.3",
+    "note": "v0.5.3：长时段补 focusBranchIds，便于分段点亮六片面",
     "crs": "WGS84"
   },
   "eras": [
@@ -14,6 +14,9 @@
       "summary": "吴越故地土著语言属非汉语（近侗台底层）。吴、越分国而言语相通，华夏文献多以“夷言”“南蛮鴃舌”视之。",
       "focusCityIds": [
         "suzhou"
+      ],
+      "focusBranchIds": [
+        "branch-taihu"
       ]
     },
     {
@@ -26,6 +29,10 @@
       "focusCityIds": [
         "hangzhou",
         "wenzhou"
+      ],
+      "focusBranchIds": [
+        "branch-taihu",
+        "branch-oujiang"
       ]
     },
     {
@@ -40,6 +47,11 @@
         "suzhou",
         "wenzhou",
         "xuancheng"
+      ],
+      "focusBranchIds": [
+        "branch-taihu",
+        "branch-oujiang",
+        "branch-taizhou"
       ]
     },
     {
@@ -56,6 +68,12 @@
         "jinhua",
         "xuancheng",
         "taizhou"
+      ],
+      "focusBranchIds": [
+        "branch-taihu",
+        "branch-oujiang",
+        "branch-taizhou",
+        "branch-jinqu"
       ]
     },
     {
@@ -71,6 +89,14 @@
         "wenzhou",
         "xuancheng",
         "taizhou"
+      ],
+      "focusBranchIds": [
+        "branch-taihu",
+        "branch-taizhou",
+        "branch-oujiang",
+        "branch-jinqu",
+        "branch-shangli",
+        "branch-xuanzhou"
       ]
     },
     {
@@ -90,6 +116,14 @@
         "jinhua",
         "xuancheng",
         "taizhou"
+      ],
+      "focusBranchIds": [
+        "branch-taihu",
+        "branch-xuanzhou",
+        "branch-shangli",
+        "branch-jinqu",
+        "branch-oujiang",
+        "branch-taizhou"
       ]
     },
     {
@@ -108,6 +142,14 @@
         "jinhua",
         "xuancheng",
         "taizhou"
+      ],
+      "focusBranchIds": [
+        "branch-taihu",
+        "branch-taizhou",
+        "branch-oujiang",
+        "branch-jinqu",
+        "branch-shangli",
+        "branch-xuanzhou"
       ]
     }
   ],
@@ -21562,7 +21604,7 @@
   "ux": {
     "branchLayer": "单击单选/再点取消；悬停 shortTip（片名+一句）；勿堆 admins",
     "cityLayer": "默认扬州；进层自动播前 3 事件，箭头跟播；面板固定标题/年份/正文",
-    "eraLayer": "滑条只亮 eras[].focusCityIds；旁白用 summary"
+    "eraLayer": "滑条同时点亮 focusBranchIds 面 + focusCityIds 点；旁白用 summary；地图需占满右侧"
   },
   "palette": {
     "branches": {

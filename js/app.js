@@ -69,11 +69,10 @@ function cityOutline(id) {
 }
 
 function size() {
-  const wrap = plotEl.parentElement;
-  return {
-    width: Math.max(480, wrap.clientWidth - 8),
-    height: Math.max(420, wrap.clientHeight - 8),
-  };
+  const box = plotEl.getBoundingClientRect();
+  const w = Math.max(640, Math.floor(box.width) || plotEl.clientWidth || 640);
+  const h = Math.max(520, Math.floor(box.height) || plotEl.clientHeight || Math.floor(window.innerHeight * 0.7));
+  return { width: w, height: h };
 }
 
 function baseProjection() {
@@ -340,12 +339,16 @@ function renderEra() {
   const { width, height } = size();
   const t = i / Math.max(1, data.eras.length - 1);
 
+  const focusBranchIds = new Set(era.focusBranchIds || []);
   const marks = [
     Plot.geo(data.branchGeoJSON, {
       fill: (d) => d.properties.fillColor,
-      fillOpacity: focusCities.length ? 0.12 : 0.15 + t * 0.35,
-      stroke: "#FFFaf3",
-      strokeWidth: 0.6,
+      fillOpacity: (d) => {
+        if (!focusBranchIds.size) return 0.45;
+        return focusBranchIds.has(d.properties.id) ? 0.62 : 0.1;
+      },
+      stroke: (d) => (focusBranchIds.has(d.properties.id) ? ui.ink : "#FFFaf3"),
+      strokeWidth: (d) => (focusBranchIds.has(d.properties.id) ? 1.2 : 0.5),
     }),
   ];
 
@@ -396,10 +399,17 @@ function renderEra() {
     marks,
   });
   plotEl.replaceChildren(chart);
-  legendEl.innerHTML =
-    focusCities.length > 0
-      ? `<div class="row"><i style="background:${ui.accent}"></i>本段相关城市</div><div class="row">${focusCities.map((c) => c.name).join("、")}</div>`
-      : `<div class="row">本段暂无点位，旁白见左侧</div>`;
+  const focusBranchNames = data.branchGeoJSON.features
+    .filter((f) => focusBranchIds.has(f.properties.id))
+    .map((f) => f.properties.name);
+  legendEl.innerHTML = [
+    focusBranchNames.length
+      ? `<div class="row"><i style="background:${ui.accent}"></i>本段亮起：${focusBranchNames.join("、")}</div>`
+      : "",
+    focusCities.length
+      ? `<div class="row">相关城：${focusCities.map((c) => c.name).join("、")}</div>`
+      : "",
+  ].filter(Boolean).join("") || `<div class="row">旁白见左侧</div>`;
 }
 
 data.cities.forEach((c) => {
