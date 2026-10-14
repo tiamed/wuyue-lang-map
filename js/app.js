@@ -1156,20 +1156,6 @@ function restoreBranchColors() {
 }
 
 function renderBranchLegend() {
-  renderBranchLegend();
-}
-
-function renderBranchView() {
-  hideTimeAxis();
-  setChinaVisible(false);
-  clearMigration();
-  applySubBranchMode();
-  setIslandLayersVisible(true);
-  map.setPaintProperty("cities-circle", "circle-opacity", 0);
-  map.setFilter("city-outline-fill", ["==", ["get", "id"], ""]);
-  map.setFilter("city-outline-line", ["==", ["get", "id"], ""]);
-  applyBranchPaint();
-  showBranchLabels();
   const note = data.partitionNote
     ? `<div class="row" style="margin-top:4px;opacity:.85">${data.partitionNote.slice(0, 42)}…</div>`
     : "";
@@ -1189,6 +1175,20 @@ function renderBranchView() {
         : "") +
       note
   );
+}
+
+function renderBranchView() {
+  hideTimeAxis();
+  setChinaVisible(false);
+  clearMigration();
+  applySubBranchMode();
+  setIslandLayersVisible(true);
+  map.setPaintProperty("cities-circle", "circle-opacity", 0);
+  map.setFilter("city-outline-fill", ["==", ["get", "id"], ""]);
+  map.setFilter("city-outline-line", ["==", ["get", "id"], ""]);
+  applyBranchPaint();
+  showBranchLabels();
+  renderBranchLegend();
   if (selectedBranchId) {
     const f = data.branchGeoJSON.features.find((x) => x.properties.id === selectedBranchId);
     if (f) {
