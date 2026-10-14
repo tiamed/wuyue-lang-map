@@ -1,4 +1,9 @@
 const data = await fetch("data/wuyue-map-data.json").then((r) => r.json());
+const dataVer = (data.meta && data.meta.version) || "";
+const subEl = document.querySelector(".top .sub");
+if (subEl && dataVer) {
+  subEl.textContent = subEl.textContent.replace(/数据 v[\d.]+/, `数据 v${dataVer}`);
+}
 const chinaProvinces = await fetch("data/china-provinces.geojson").then((r) => r.json());
 
 const ui = (data.palette && data.palette.ui) || {
