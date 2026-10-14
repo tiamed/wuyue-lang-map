@@ -1,4 +1,5 @@
 const data = await fetch("data/wuyue-map-data.json").then((r) => r.json());
+const chinaProvinces = await fetch("data/china-provinces.geojson").then((r) => r.json());
 
 const ui = (data.palette && data.palette.ui) || {
   background: "#F3EDE2",
@@ -24,7 +25,7 @@ root.style.setProperty("--ink", ui.ink);
 
 const legendEl = document.getElementById("legend");
 const branchList = document.getElementById("branchList");
-const citySelect = document.getElementById("citySelect");
+const cityChips = document.getElementById("cityChips");
 const cityMeta = document.getElementById("cityMeta");
 const eventList = document.getElementById("eventList");
 const playBtn = document.getElementById("playBtn");
@@ -45,7 +46,8 @@ let selectedEventIdx = 0;
 let eraIdx = 4;
 let playTimer = null;
 let eraPlayTimer = null;
-let cityEnterPlayed = false;
+const labelMarkers = [];
+const migMarkers = [];
 
 function yearText(y) {
   return y < 0 ? "前" + Math.abs(y) + "年" : y + "年";
@@ -65,6 +67,20 @@ function setStory({ kicker, title, year, body }) {
   storyBody.textContent = body || "";
 }
 
+function clearMarkers(arr) {
+  while (arr.length) {
+    const m = arr.pop();
+    m.remove();
+  }
+}
+
+function makeLabel(text, className) {
+  const el = document.createElement("div");
+  el.className = "map-label" + (className ? " " + className : "");
+  el.textContent = text;
+  return el;
+}
+
 function citiesGeoJSON() {
   return {
     type: "FeatureCollection",
@@ -76,25 +92,72 @@ function citiesGeoJSON() {
   };
 }
 
-function migrationGeoJSON(ev) {
+function branchCentroids() {
+  return data.branchGeoJSON.features.map((f) => {
+    const coords = [];
+    const walk = (c) => {
+      if (typeof c[0] === "number") coords.push(c);
+      else c.forEach(walk);
+    };
+    walk(f.geometry.coordinates);
+    let sx = 0, sy = 0;
+    coords.forEach(([x, y]) => {
+      sx += x;
+      sy += y;
+    });
+    const n = Math.max(1, coords.length);
+    return {
+      id: f.properties.id,
+      name: f.properties.name,
+      lng: sx / n,
+      lat: sy / n,
+      fillColor: f.properties.fillColor,
+    };
+  });
+}
+
+function migrationBundle(ev, cityName) {
   if (!ev || !ev.from || !ev.to) {
-    return { type: "FeatureCollection", features: [] };
+    return {
+      line: { type: "FeatureCollection", features: [] },
+      fromName: "",
+      toName: cityName || "终点",
+      bounds: null,
+      from: null,
+      to: null,
+    };
   }
+  const fromLng = ev.from[1];
+  const fromLat = ev.from[0];
+  const toLng = ev.to[1];
+  const toLat = ev.to[0];
+  const fromName = ev.fromName || "起点";
+  const toName = ev.toName || cityName || "终点";
   return {
-    type: "FeatureCollection",
-    features: [
-      {
-        type: "Feature",
-        properties: {},
-        geometry: {
-          type: "LineString",
-          coordinates: [
-            [ev.from[1], ev.from[0]],
-            [ev.to[1], ev.to[0]],
-          ],
-        },
-      },
+    fromName,
+    toName,
+    from: [fromLng, fromLat],
+    to: [toLng, toLat],
+    bounds: [
+      [Math.min(fromLng, toLng), Math.min(fromLat, toLat)],
+      [Math.max(fromLng, toLng), Math.max(fromLat, toLat)],
     ],
+    line: {
+      type: "FeatureCollection",
+      features: [
+        {
+          type: "Feature",
+          properties: { fromName, toName },
+          geometry: {
+            type: "LineString",
+            coordinates: [
+              [fromLng, fromLat],
+              [toLng, toLat],
+            ],
+          },
+        },
+      ],
+    },
   };
 }
 
@@ -113,12 +176,7 @@ function branchFillColorExpr() {
 
 function opacityExprForBranches(focusIds, selectedId) {
   if (selectedId) {
-    return [
-      "case",
-      ["==", ["get", "id"], selectedId],
-      0.75,
-      0.12,
-    ];
+    return ["case", ["==", ["get", "id"], selectedId], 0.75, 0.12];
   }
   if (focusIds && focusIds.length) {
     return [
@@ -152,11 +210,90 @@ const map = new maplibregl.Map({
 map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
 map.addControl(new maplibregl.AttributionControl({ compact: true }));
 
-function fitWuYue() {
-  map.fitBounds(BOUNDS, { padding: 48, duration: 0, maxZoom: 8.5 });
+function fitWuYue(duration = 0) {
+  map.fitBounds(BOUNDS, {
+    padding: { top: 56, bottom: 40, left: 40, right: 40 },
+    duration,
+    maxZoom: 8.5,
+  });
+}
+
+function fitMigration(bounds, toLngLat) {
+  if (!bounds) {
+    fitWuYue(400);
+    return;
+  }
+  // pad north so Yangzhou / northern tip isn't clipped
+  const [[minLng, minLat], [maxLng, maxLat]] = bounds;
+  const padLat = Math.max(0.8, (maxLat - minLat) * 0.25);
+  const padLng = Math.max(0.8, (maxLng - minLng) * 0.2);
+  let b = [
+    [minLng - padLng, minLat - padLat * 0.35],
+    [maxLng + padLng, maxLat + padLat * 1.15],
+  ];
+  // always include Wu-Yue northern edge a bit when destination is Yangzhou-ish
+  if (toLngLat) {
+    b[0][0] = Math.min(b[0][0], toLngLat[0] - 0.6);
+    b[0][1] = Math.min(b[0][1], toLngLat[1] - 0.5);
+    b[1][0] = Math.max(b[1][0], toLngLat[0] + 0.6);
+    b[1][1] = Math.max(b[1][1], toLngLat[1] + 0.9);
+  }
+  map.fitBounds(b, {
+    padding: { top: 96, bottom: 64, left: 56, right: 56 },
+    duration: 500,
+    maxZoom: 6.0,
+    minZoom: 3.6,
+  });
+}
+
+function setChinaVisible(on) {
+  const vis = on ? "visible" : "none";
+  if (map.getLayer("china-fill")) map.setLayoutProperty("china-fill", "visibility", vis);
+  if (map.getLayer("china-line")) map.setLayoutProperty("china-line", "visibility", vis);
+}
+
+function showCityLabels(activeId) {
+  clearMarkers(labelMarkers);
+  data.cities.forEach((c) => {
+    const el = makeLabel(c.name, c.id === activeId ? "mig" : "");
+    const marker = new maplibregl.Marker({ element: el, anchor: "bottom", offset: [0, -8] })
+      .setLngLat([c.lng, c.lat])
+      .addTo(map);
+    labelMarkers.push(marker);
+  });
+}
+
+function showBranchLabels() {
+  clearMarkers(labelMarkers);
+  branchCentroids().forEach((b) => {
+    const el = makeLabel(b.name, "branch-label");
+    el.style.borderColor = b.fillColor;
+    const marker = new maplibregl.Marker({ element: el, anchor: "center" })
+      .setLngLat([b.lng, b.lat])
+      .addTo(map);
+    labelMarkers.push(marker);
+  });
+}
+
+function showMigEndLabels(bundle) {
+  clearMarkers(migMarkers);
+  if (!bundle.from || !bundle.to) return;
+  const fromEl = makeLabel(bundle.fromName, "mig");
+  const toEl = makeLabel(bundle.toName, "mig");
+  migMarkers.push(
+    new maplibregl.Marker({ element: fromEl, anchor: "bottom", offset: [0, -6] })
+      .setLngLat(bundle.from)
+      .addTo(map)
+  );
+  migMarkers.push(
+    new maplibregl.Marker({ element: toEl, anchor: "bottom", offset: [0, -6] })
+      .setLngLat(bundle.to)
+      .addTo(map)
+  );
 }
 
 map.on("load", () => {
+  map.addSource("china", { type: "geojson", data: chinaProvinces });
   map.addSource("branches", { type: "geojson", data: data.branchGeoJSON });
   map.addSource("city-outlines", {
     type: "geojson",
@@ -168,42 +305,59 @@ map.on("load", () => {
     data: { type: "FeatureCollection", features: [] },
   });
 
+  const size = 64;
+  const canvas = document.createElement("canvas");
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext("2d");
+  ctx.fillStyle = ui.accent;
+  ctx.beginPath();
+  ctx.moveTo(8, 20);
+  ctx.lineTo(size - 4, size / 2);
+  ctx.lineTo(8, size - 20);
+  ctx.lineTo(18, size / 2);
+  ctx.closePath();
+  ctx.fill();
+  map.addImage("mig-arrow", ctx.getImageData(0, 0, size, size), { pixelRatio: 2 });
+
+  map.addLayer({
+    id: "china-fill",
+    type: "fill",
+    source: "china",
+    layout: { visibility: "none" },
+    paint: { "fill-color": "#E7DFD2", "fill-opacity": 0.55 },
+  });
+  map.addLayer({
+    id: "china-line",
+    type: "line",
+    source: "china",
+    layout: { visibility: "none" },
+    paint: { "line-color": "#C4B6A4", "line-width": 0.7, "line-opacity": 0.85 },
+  });
   map.addLayer({
     id: "branches-fill",
     type: "fill",
     source: "branches",
-    paint: {
-      "fill-color": branchFillColorExpr(),
-      "fill-opacity": 0.55,
-    },
+    paint: { "fill-color": branchFillColorExpr(), "fill-opacity": 0.55 },
   });
   map.addLayer({
     id: "branches-line",
     type: "line",
     source: "branches",
-    paint: {
-      "line-color": "#FFFaf3",
-      "line-width": 1,
-    },
+    paint: { "line-color": "#FFFaf3", "line-width": 1 },
   });
   map.addLayer({
     id: "city-outline-fill",
     type: "fill",
     source: "city-outlines",
-    paint: {
-      "fill-color": ui.cityStroke,
-      "fill-opacity": 0.2,
-    },
+    paint: { "fill-color": ui.cityStroke, "fill-opacity": 0.22 },
     filter: ["==", ["get", "id"], ""],
   });
   map.addLayer({
     id: "city-outline-line",
     type: "line",
     source: "city-outlines",
-    paint: {
-      "line-color": ui.cityStroke,
-      "line-width": 2,
-    },
+    paint: { "line-color": ui.cityStroke, "line-width": 2.2 },
     filter: ["==", ["get", "id"], ""],
   });
   map.addLayer({
@@ -211,10 +365,15 @@ map.on("load", () => {
     type: "circle",
     source: "cities",
     paint: {
-      "circle-radius": 4,
+      "circle-radius": [
+        "case",
+        ["==", ["get", "id"], ""],
+        7,
+        5,
+      ],
       "circle-color": ui.mutedInk,
       "circle-stroke-color": "#FFFaf3",
-      "circle-stroke-width": 1.2,
+      "circle-stroke-width": 1.4,
       "circle-opacity": 0,
     },
   });
@@ -222,20 +381,23 @@ map.on("load", () => {
     id: "migration-line",
     type: "line",
     source: "migration",
-    paint: {
-      "line-color": ui.accent,
-      "line-width": 3,
-      "line-opacity": 0.9,
-    },
+    paint: { "line-color": ui.accent, "line-width": 4.5, "line-opacity": 0.92 },
     layout: { "line-cap": "round", "line-join": "round" },
   });
-
-  // hover tip for branches
-  const popup = new maplibregl.Popup({
-    closeButton: false,
-    closeOnClick: false,
-    offset: 12,
+  map.addLayer({
+    id: "migration-arrow",
+    type: "symbol",
+    source: "migration",
+    layout: {
+      "symbol-placement": "line-center",
+      "icon-image": "mig-arrow",
+      "icon-size": 0.6,
+      "icon-allow-overlap": true,
+      "icon-rotation-alignment": "map",
+    },
   });
+
+  const popup = new maplibregl.Popup({ closeButton: false, closeOnClick: false, offset: 12 });
   map.on("mousemove", "branches-fill", (e) => {
     if (mode !== "branch") return;
     map.getCanvas().style.cursor = "pointer";
@@ -252,28 +414,28 @@ map.on("load", () => {
     map.getCanvas().style.cursor = "";
     popup.remove();
   });
-
   map.on("click", "branches-fill", (e) => {
     if (mode !== "branch") return;
     const f = e.features && e.features[0];
     if (f) selectBranch(f.properties.id);
   });
-
   map.on("click", "cities-circle", (e) => {
-    if (mode !== "city") return;
+    if (mode !== "city" && mode !== "era") return;
     const f = e.features && e.features[0];
-    if (f) pickCity(f.properties.id, false);
+    if (f && mode === "city") pickCity(f.properties.id, true);
   });
 
   fitWuYue();
   buildBranchList();
+  buildCityChips();
   buildEraTimeline();
   setMode("branch");
 });
 
 window.addEventListener("resize", () => {
   map.resize();
-  fitWuYue();
+  if (mode === "city") renderCityView();
+  else fitWuYue();
 });
 
 function stopCityPlay() {
@@ -282,7 +444,7 @@ function stopCityPlay() {
     playTimer = null;
   }
   playBtn.classList.remove("playing");
-  playBtn.textContent = "自动播放前 3 事";
+  playBtn.textContent = "重新播放";
 }
 
 function stopEraPlay() {
@@ -296,8 +458,7 @@ function stopEraPlay() {
 
 function applyBranchPaint() {
   if (!map.getLayer("branches-fill")) return;
-  const focus =
-    mode === "era" ? data.eras[eraIdx].focusBranchIds || [] : null;
+  const focus = mode === "era" ? data.eras[eraIdx].focusBranchIds || [] : null;
   const selected = mode === "branch" ? selectedBranchId : null;
   map.setPaintProperty(
     "branches-fill",
@@ -318,19 +479,33 @@ function applyBranchPaint() {
   ]);
 }
 
+function clearMigration() {
+  map.getSource("migration").setData({ type: "FeatureCollection", features: [] });
+  clearMarkers(migMarkers);
+}
+
 function setCityLayersVisible(on) {
-  const o = on ? 1 : 0;
   map.setPaintProperty("cities-circle", "circle-opacity", on ? 1 : 0);
   if (!on) {
     map.setFilter("city-outline-fill", ["==", ["get", "id"], ""]);
     map.setFilter("city-outline-line", ["==", ["get", "id"], ""]);
-    map.getSource("migration").setData({ type: "FeatureCollection", features: [] });
+    clearMigration();
+    setChinaVisible(false);
   }
 }
 
+function restoreBranchColors() {
+  map.setPaintProperty("branches-fill", "fill-color", branchFillColorExpr());
+}
+
 function renderBranchView() {
-  setCityLayersVisible(false);
+  setChinaVisible(false);
+  clearMigration();
+  map.setPaintProperty("cities-circle", "circle-opacity", 0);
+  map.setFilter("city-outline-fill", ["==", ["get", "id"], ""]);
+  map.setFilter("city-outline-line", ["==", ["get", "id"], ""]);
   applyBranchPaint();
+  showBranchLabels();
   renderLegend(
     data.branchGeoJSON.features
       .map(
@@ -339,7 +514,7 @@ function renderBranchView() {
       )
       .join("")
   );
-  fitWuYue();
+  fitWuYue(400);
 }
 
 function selectBranch(id) {
@@ -381,10 +556,23 @@ function buildBranchList() {
   });
 }
 
+function buildCityChips() {
+  cityChips.innerHTML = "";
+  data.cities.forEach((c) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "city-chip";
+    btn.dataset.id = c.id;
+    btn.innerHTML = `<span class="chip-name">${c.name}</span><span class="chip-branch">${c.branch}</span>`;
+    btn.addEventListener("click", () => pickCity(c.id, true));
+    cityChips.appendChild(btn);
+  });
+}
+
 function renderCityView() {
-  applyBranchPaint();
-  map.setPaintProperty("branches-fill", "fill-opacity", 0.18);
-  map.setPaintProperty("branches-fill", "fill-color", ui.water);
+  setChinaVisible(true);
+  restoreBranchColors();
+  map.setPaintProperty("branches-fill", "fill-opacity", 0.42);
 
   const outlineFilter = ["==", ["get", "id"], selectedCity.id];
   map.setFilter("city-outline-fill", outlineFilter);
@@ -394,8 +582,8 @@ function renderCityView() {
   map.setPaintProperty("cities-circle", "circle-radius", [
     "case",
     ["==", ["get", "id"], selectedCity.id],
-    7,
-    4,
+    8,
+    4.5,
   ]);
   map.setPaintProperty("cities-circle", "circle-color", [
     "case",
@@ -405,37 +593,40 @@ function renderCityView() {
   ]);
 
   const ev = selectedCity.events[selectedEventIdx];
-  map.getSource("migration").setData(migrationGeoJSON(ev));
+  const bundle = migrationBundle(ev, selectedCity.name);
+  map.getSource("migration").setData(bundle.line);
+  showCityLabels(selectedCity.id);
+  showMigEndLabels(bundle);
 
-  renderLegend(
-    `<div class="row"><i style="background:${ui.cityStroke}"></i>当前城市轮廓</div><div class="row"><i style="background:${ui.accent}"></i>迁徙方向（当前事件）</div>`
-  );
-  fitWuYue();
-}
-
-function restoreBranchColors() {
-  map.setPaintProperty("branches-fill", "fill-color", branchFillColorExpr());
-}
-
-function syncCityStory() {
-  const ev = selectedCity.events[selectedEventIdx];
-  if (!ev) return;
+  const blurb = selectedCity.blurb ? `\n\n${selectedCity.blurb}` : "";
   setStory({
     kicker: "城市个案 · " + selectedCity.name,
-    title: ev.title,
-    year: `${yearText(ev.year)} · ${ev.era || ""}`,
-    body: ev.body,
+    title: ev ? ev.title : selectedCity.name,
+    year: ev ? `${yearText(ev.year)} · ${ev.era || ""}` : "",
+    body: ev
+      ? `迁徙：${bundle.fromName} → ${bundle.toName}\n\n${ev.body}${blurb}`
+      : blurb,
   });
+
+  renderLegend(
+    `<div class="row"><i style="background:#C4B6A4"></i>中国省界（今界示意）</div>
+     <div class="row"><i style="background:${ui.accent}"></i>${bundle.fromName || "—"} → ${bundle.toName || "—"}</div>
+     <div class="row"><i style="background:${ui.cityStroke}"></i>${selectedCity.name} 轮廓</div>`
+  );
+  fitMigration(bundle.bounds, bundle.to);
 }
 
 function syncCityPanel() {
   cityMeta.textContent = `今属 ${selectedCity.branch}`;
-  citySelect.value = selectedCity.id;
+  [...cityChips.children].forEach((btn) => {
+    btn.classList.toggle("active", btn.dataset.id === selectedCity.id);
+  });
   eventList.innerHTML = "";
   selectedCity.events.forEach((ev, idx) => {
     const li = document.createElement("li");
     if (idx === selectedEventIdx) li.classList.add("active");
-    li.innerHTML = `<span class="year">${yearText(ev.year)} · ${ev.era || ""}</span><strong>${ev.title}</strong>`;
+    const b = migrationBundle(ev, selectedCity.name);
+    li.innerHTML = `<span class="year">${yearText(ev.year)} · ${ev.era || ""}</span><strong>${ev.title}</strong><span class="body" style="display:block;margin-top:4px;font-size:.78rem">${b.fromName} → ${b.toName}</span>`;
     li.addEventListener("click", () => {
       stopCityPlay();
       selectedEventIdx = idx;
@@ -444,7 +635,6 @@ function syncCityPanel() {
     });
     eventList.appendChild(li);
   });
-  syncCityStory();
 }
 
 function pickCity(id, autoplay) {
@@ -474,7 +664,7 @@ function startCityAutoplay() {
     selectedEventIdx = step;
     syncCityPanel();
     renderCityView();
-  }, 2200);
+  }, 2400);
 }
 
 function buildEraTimeline() {
@@ -503,7 +693,10 @@ function setEra(i) {
 function renderEraView() {
   const era = data.eras[eraIdx];
   const focusIds = era.focusBranchIds || [];
-  const focusCities = new Set(era.focusCityIds || []);
+  const focusCities = [...(era.focusCityIds || [])];
+
+  setChinaVisible(false);
+  clearMigration();
 
   setStory({
     kicker: "长时段",
@@ -531,17 +724,16 @@ function renderEraView() {
     0.7,
   ]);
 
-  // show focus city outlines
-  if (focusCities.size) {
+  if (focusCities.length) {
     map.setFilter("city-outline-fill", [
       "in",
       ["get", "id"],
-      ["literal", [...focusCities]],
+      ["literal", focusCities],
     ]);
     map.setFilter("city-outline-line", [
       "in",
       ["get", "id"],
-      ["literal", [...focusCities]],
+      ["literal", focusCities],
     ]);
   } else {
     map.setFilter("city-outline-fill", ["==", ["get", "id"], ""]);
@@ -551,17 +743,38 @@ function renderEraView() {
   map.setPaintProperty("cities-circle", "circle-opacity", 1);
   map.setPaintProperty("cities-circle", "circle-radius", [
     "case",
-    ["in", ["get", "id"], ["literal", [...focusCities]]],
-    6,
-    3,
+    ["in", ["get", "id"], ["literal", focusCities]],
+    7,
+    3.5,
   ]);
   map.setPaintProperty("cities-circle", "circle-color", [
     "case",
-    ["in", ["get", "id"], ["literal", [...focusCities]]],
+    ["in", ["get", "id"], ["literal", focusCities]],
     ui.accent,
     "#C4B8A8",
   ]);
-  map.getSource("migration").setData({ type: "FeatureCollection", features: [] });
+
+  clearMarkers(labelMarkers);
+  data.cities.forEach((c) => {
+    if (!focusCities.includes(c.id)) return;
+    const el = makeLabel(c.name, "mig");
+    labelMarkers.push(
+      new maplibregl.Marker({ element: el, anchor: "bottom", offset: [0, -8] })
+        .setLngLat([c.lng, c.lat])
+        .addTo(map)
+    );
+  });
+  // also label focused branches
+  branchCentroids()
+    .filter((b) => focusIds.includes(b.id))
+    .forEach((b) => {
+      const el = makeLabel(b.name, "branch-label");
+      labelMarkers.push(
+        new maplibregl.Marker({ element: el, anchor: "center" })
+          .setLngLat([b.lng, b.lat])
+          .addTo(map)
+      );
+    });
 
   const names = data.branchGeoJSON.features
     .filter((f) => focusIds.includes(f.properties.id))
@@ -569,7 +782,7 @@ function renderEraView() {
   renderLegend(
     `<div class="row"><i style="background:${ui.accent}"></i>本段亮起：${names.join("、") || "—"}</div>`
   );
-  fitWuYue();
+  fitWuYue(400);
 }
 
 function startEraAutoplay() {
@@ -585,13 +798,6 @@ function startEraAutoplay() {
   }, 3200);
 }
 
-data.cities.forEach((c) => {
-  const opt = document.createElement("option");
-  opt.value = c.id;
-  opt.textContent = `${c.name}（${c.branch}）`;
-  citySelect.appendChild(opt);
-});
-citySelect.addEventListener("change", () => pickCity(citySelect.value, false));
 playBtn.addEventListener("click", () => {
   if (playTimer) stopCityPlay();
   else startCityAutoplay();
@@ -630,14 +836,14 @@ function setMode(next) {
   document.getElementById("cityControls").classList.toggle("hidden", next !== "city");
 
   if (!map.isStyleLoaded()) return;
-
   restoreBranchColors();
   selectedBranchId = null;
+  clearMarkers(labelMarkers);
+  clearMarkers(migMarkers);
 
   if (next === "era") {
     setEra(eraIdx);
   } else if (next === "branch") {
-    setCityLayersVisible(false);
     setStory({
       kicker: "六片分支",
       title: "点击地图或列表",
@@ -647,15 +853,11 @@ function setMode(next) {
     [...branchList.children].forEach((li) => li.classList.remove("active"));
     renderBranchView();
   } else {
-    restoreBranchColors();
     selectedCity = data.cities.find((c) => c.id === "yangzhou") || data.cities[0];
     selectedEventIdx = 0;
     syncCityPanel();
     renderCityView();
-    if (!cityEnterPlayed) {
-      cityEnterPlayed = true;
-      startCityAutoplay();
-    }
+    startCityAutoplay();
   }
 }
 

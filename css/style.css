@@ -151,3 +151,48 @@ label { display: block; color: var(--muted); font-size: 0.8rem; margin-bottom: 6
 .era-progress-bar {
   height: 100%; width: 0%; background: var(--accent); transition: width .25s ease;
 }
+
+.city-chips {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 8px 0 12px;
+}
+.city-chip {
+  text-align: left;
+  border: 1px solid var(--line);
+  background: #FFFaf3;
+  border-radius: 12px;
+  padding: 10px 12px;
+  cursor: pointer;
+  font: inherit;
+  color: var(--text);
+}
+.city-chip:hover, .city-chip.active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px rgba(139,58,58,.18);
+}
+.city-chip .chip-name { display: block; font-weight: 650; letter-spacing: 0.04em; }
+.city-chip .chip-branch { display: block; margin-top: 2px; font-size: 0.72rem; color: var(--muted); }
+.map-label {
+  background: rgba(250,246,239,.92);
+  border: 1px solid #E0D6C8;
+  color: #2C2A28;
+  font-size: 12px;
+  line-height: 1.2;
+  padding: 2px 6px;
+  border-radius: 6px;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 1px 2px rgba(44,42,40,.08);
+}
+.map-label.mig {
+  background: rgba(139,58,58,.92);
+  color: #F3EDE2;
+  border-color: transparent;
+  font-weight: 650;
+}
+.map-label.branch-label {
+  font-size: 11px;
+  opacity: 0.92;
+}
