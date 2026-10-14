@@ -1,7 +1,7 @@
 {
   "meta": {
-    "version": "0.5.1",
-    "note": "v0.5：六片改为地级行政轮廓聚合；城市层附 cityOutlines 真实边界；仍非精确同言线；v0.5.1 江南风配色",
+    "version": "0.5.2",
+    "note": "v0.5：六片改为地级行政轮廓聚合；城市层附 cityOutlines 真实边界；仍非精确同言线；v0.5.1 江南风配色；v0.5.2 交互：shortTip、eras.focusCityIds",
     "crs": "WGS84"
   },
   "eras": [
@@ -11,7 +11,10 @@
       "yearStart": -770,
       "yearEnd": -221,
       "label": "先秦：古吴越语",
-      "summary": "吴越故地土著语言属非汉语（近侗台底层）。吴、越分国而言语相通，华夏文献多以“夷言”“南蛮鴃舌”视之。"
+      "summary": "吴越故地土著语言属非汉语（近侗台底层）。吴、越分国而言语相通，华夏文献多以“夷言”“南蛮鴃舌”视之。",
+      "focusCityIds": [
+        "suzhou"
+      ]
     },
     {
       "id": "era-chu-qinhan",
@@ -19,7 +22,11 @@
       "yearStart": -333,
       "yearEnd": 220,
       "label": "楚灭越→秦汉：江东方言萌芽",
-      "summary": "楚语进入吴越，与古越语底层及中原汉语接触，逐渐形成有地方特色的汉语江东方言；开发由苏南浙北向南推进。"
+      "summary": "楚语进入吴越，与古越语底层及中原汉语接触，逐渐形成有地方特色的汉语江东方言；开发由苏南浙北向南推进。",
+      "focusCityIds": [
+        "hangzhou",
+        "wenzhou"
+      ]
     },
     {
       "id": "era-weijin",
@@ -27,7 +34,13 @@
       "yearStart": 220,
       "yearEnd": 589,
       "label": "魏晋南朝：汉语吴语成型",
-      "summary": "北方移民推动方言分化；文献中“吴语”渐指江东方言。吴语作为特征明显的汉语方言，约在此期形成。"
+      "summary": "北方移民推动方言分化；文献中“吴语”渐指江东方言。吴语作为特征明显的汉语方言，约在此期形成。",
+      "focusCityIds": [
+        "yangzhou",
+        "suzhou",
+        "wenzhou",
+        "xuancheng"
+      ]
     },
     {
       "id": "era-tang-nbsong",
@@ -35,7 +48,15 @@
       "yearStart": 618,
       "yearEnd": 1127,
       "label": "唐—北宋：吴语巩固南扩",
-      "summary": "吴语格局巩固，地理上由北向南扩展。扬州一带至北宋仍带“吴侬”底色（如苏轼“语音犹自带吴侬”）。"
+      "summary": "吴语格局巩固，地理上由北向南扩展。扬州一带至北宋仍带“吴侬”底色（如苏轼“语音犹自带吴侬”）。",
+      "focusCityIds": [
+        "yangzhou",
+        "ningbo",
+        "wenzhou",
+        "jinhua",
+        "xuancheng",
+        "taizhou"
+      ]
     },
     {
       "id": "era-southern-song",
@@ -43,7 +64,14 @@
       "yearStart": 1127,
       "yearEnd": 1279,
       "label": "南宋：各片格局奠基",
-      "summary": "现代吴语各片地理格局基本奠定。建炎南渡使杭州成临安官话岛；江淮沿线（如扬州）加速脱离吴语、转向官话。"
+      "summary": "现代吴语各片地理格局基本奠定。建炎南渡使杭州成临安官话岛；江淮沿线（如扬州）加速脱离吴语、转向官话。",
+      "focusCityIds": [
+        "yangzhou",
+        "hangzhou",
+        "wenzhou",
+        "xuancheng",
+        "taizhou"
+      ]
     },
     {
       "id": "era-mingqing",
@@ -51,7 +79,18 @@
       "yearStart": 1368,
       "yearEnd": 1911,
       "label": "明清：边缘交错与层累",
-      "summary": "宣州、苏北等边缘与官话、徽语交错；明初江南移民（民间称“洪武赶散”）为淮扬叠加吴语成分；徽商等再渗入地方话。"
+      "summary": "宣州、苏北等边缘与官话、徽语交错；明初江南移民（民间称“洪武赶散”）为淮扬叠加吴语成分；徽商等再渗入地方话。",
+      "focusCityIds": [
+        "yangzhou",
+        "hangzhou",
+        "suzhou",
+        "shanghai",
+        "ningbo",
+        "wenzhou",
+        "jinhua",
+        "xuancheng",
+        "taizhou"
+      ]
     },
     {
       "id": "era-modern",
@@ -59,7 +98,17 @@
       "yearStart": 1843,
       "yearEnd": 2026,
       "label": "近代至今：通语冲击与六片并存",
-      "summary": "开埠与城市化加速向通语靠拢（以上海最显）。今通行分区约六片：太湖、台州、瓯江、金衢、上丽、宣州。"
+      "summary": "开埠与城市化加速向通语靠拢（以上海最显）。今通行分区约六片：太湖、台州、瓯江、金衢、上丽、宣州。",
+      "focusCityIds": [
+        "hangzhou",
+        "suzhou",
+        "shanghai",
+        "ningbo",
+        "wenzhou",
+        "jinhua",
+        "xuancheng",
+        "taizhou"
+      ]
     }
   ],
   "branches": [
@@ -84,7 +133,8 @@
         "绍兴市",
         "宁波市",
         "舟山市"
-      ]
+      ],
+      "shortTip": "北区主体，人口最多。"
     },
     {
       "id": "branch-taizhou",
@@ -96,7 +146,8 @@
       "fillColor": "#7F9A72",
       "admins": [
         "台州市"
-      ]
+      ],
+      "shortTip": "南区之一，语音与北区相对接近，部分可与北部吴语有限沟通。"
     },
     {
       "id": "branch-oujiang",
@@ -108,7 +159,8 @@
       "fillColor": "#C47865",
       "admins": [
         "温州市"
-      ]
+      ],
+      "shortTip": "以温州话为核心，常被视为吴语中最难互通的一片。"
     },
     {
       "id": "branch-jinqu",
@@ -121,7 +173,8 @@
       "admins": [
         "金华市",
         "衢州市"
-      ]
+      ],
+      "shortTip": "旧婺州片与部分处衢点调整后的一片。"
     },
     {
       "id": "branch-shangli",
@@ -133,7 +186,8 @@
       "fillColor": "#6F8F80",
       "admins": [
         "丽水市"
-      ]
+      ],
+      "shortTip": "旧处衢片调整后的一片，分布于浙南及赣东北、闽北一角。"
     },
     {
       "id": "branch-xuanzhou",
@@ -149,7 +203,8 @@
         "铜陵市",
         "池州市",
         "马鞍山市"
-      ]
+      ],
+      "shortTip": "西区吴语，散在皖南、苏西南及浙西北。"
     }
   ],
   "cities": [
@@ -787,7 +842,8 @@
             "宁波市",
             "舟山市"
           ],
-          "note": "由地级市/直辖市轮廓聚合，非精确同言线"
+          "note": "由地级市/直辖市轮廓聚合，非精确同言线",
+          "shortTip": "北区主体，人口最多。"
         },
         "geometry": {
           "type": "MultiPolygon",
@@ -9530,7 +9586,8 @@
           "admins": [
             "台州市"
           ],
-          "note": "由地级市/直辖市轮廓聚合，非精确同言线"
+          "note": "由地级市/直辖市轮廓聚合，非精确同言线",
+          "shortTip": "南区之一，语音与北区相对接近，部分可与北部吴语有限沟通。"
         },
         "geometry": {
           "type": "MultiPolygon",
@@ -10553,7 +10610,8 @@
           "admins": [
             "温州市"
           ],
-          "note": "由地级市/直辖市轮廓聚合，非精确同言线"
+          "note": "由地级市/直辖市轮廓聚合，非精确同言线",
+          "shortTip": "以温州话为核心，常被视为吴语中最难互通的一片。"
         },
         "geometry": {
           "type": "MultiPolygon",
@@ -11633,7 +11691,8 @@
             "金华市",
             "衢州市"
           ],
-          "note": "由地级市/直辖市轮廓聚合，非精确同言线"
+          "note": "由地级市/直辖市轮廓聚合，非精确同言线",
+          "shortTip": "旧婺州片与部分处衢点调整后的一片。"
         },
         "geometry": {
           "type": "Polygon",
@@ -12582,7 +12641,8 @@
           "admins": [
             "丽水市"
           ],
-          "note": "由地级市/直辖市轮廓聚合，非精确同言线"
+          "note": "由地级市/直辖市轮廓聚合，非精确同言线",
+          "shortTip": "旧处衢片调整后的一片，分布于浙南及赣东北、闽北一角。"
         },
         "geometry": {
           "type": "Polygon",
@@ -13291,7 +13351,8 @@
             "池州市",
             "马鞍山市"
           ],
-          "note": "由地级市/直辖市轮廓聚合，非精确同言线"
+          "note": "由地级市/直辖市轮廓聚合，非精确同言线",
+          "shortTip": "西区吴语，散在皖南、苏西南及浙西北。"
         },
         "geometry": {
           "type": "MultiPolygon",
@@ -21499,8 +21560,9 @@
     ]
   },
   "ux": {
-    "branchLayer": "用 branchGeoJSON 填色；点击面显示片名+summary+admins；默认半透明，勿一次全选高亮到看不清",
-    "cityLayer": "底用 cityOutlines 勾行政区轮廓；点/面点击打开该城时间轴事件列表；迁徙箭头按 events.from→to 画，默认只显示当前选中城"
+    "branchLayer": "单击单选/再点取消；悬停 shortTip（片名+一句）；勿堆 admins",
+    "cityLayer": "默认扬州；进层自动播前 3 事件，箭头跟播；面板固定标题/年份/正文",
+    "eraLayer": "滑条只亮 eras[].focusCityIds；旁白用 summary"
   },
   "palette": {
     "branches": {

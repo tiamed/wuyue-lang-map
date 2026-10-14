@@ -10,7 +10,7 @@
   <header class="top">
     <div>
       <h1>吴越地区语言变迁</h1>
-      <p class="sub">thematic geo · 示意行政区聚合，非精确同言线 · 数据 v0.5.1 · 江南风</p>
+      <p class="sub">thematic geo · 示意行政区聚合，非精确同言线 · 数据 v0.5.2 · 江南风</p>
     </div>
     <nav class="layers" id="layerTabs">
       <button type="button" data-layer="era">长时段</button>
@@ -20,24 +20,35 @@
   </header>
   <main class="layout">
     <aside class="panel">
+      <article class="story" id="storyPanel" aria-live="polite">
+        <p class="story-kicker" id="storyKicker">六片分支</p>
+        <h2 class="story-title" id="storyTitle">点击地图或列表</h2>
+        <p class="story-year" id="storyYear"></p>
+        <p class="story-body" id="storyBody">半透明叠色看片区；再点同一片可取消选中。</p>
+      </article>
+
       <div id="eraControls" class="layer-pane hidden">
         <label for="eraSlider">时间轴</label>
         <input type="range" id="eraSlider" min="0" max="6" value="4" step="1" />
-        <div id="eraLabel" class="era-title"></div>
-        <p id="eraSummary" class="body"></p>
+        <p class="hint">拖到某段只亮相关城市；旁白在上方。</p>
       </div>
+
       <div id="branchControls" class="layer-pane">
-        <p class="hint">点击地图色块或下方列表；半透明叠色，看清片区范围。</p>
+        <p class="hint">单击单选，再点取消。悬停只看片名与一句简介。</p>
         <ul id="branchList" class="list"></ul>
-        <div id="branchDetail" class="detail"></div>
       </div>
+
       <div id="cityControls" class="layer-pane hidden">
         <label for="citySelect">代表城市</label>
         <select id="citySelect"></select>
-        <div id="cityMeta" class="meta"></div>
+        <div class="play-row">
+          <button type="button" id="playBtn" class="play-btn">自动播放前 3 事</button>
+          <span id="cityMeta" class="meta"></span>
+        </div>
         <ol id="eventList" class="events"></ol>
-        <p class="hint">只显示当前城的迁徙箭头；点事件可切换。</p>
+        <p class="hint">箭头只跟当前事件；地图点击只换上方文案，不跳页。</p>
       </div>
+
       <footer class="credit">Observable Plot · GitHub Pages</footer>
     </aside>
     <section class="map-wrap">
