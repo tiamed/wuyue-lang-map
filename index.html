@@ -55,7 +55,7 @@
           <span id="cityMeta" class="meta"></span>
         </div>
         <ol id="eventList" class="events"></ol>
-        <p class="hint">默认固定视野不缩放；勾选「跟随迁徙」才跟 from→to 飞过去。</p>
+        <p class="hint">默认固定视野不缩放；勾选「跟随迁徙」只平移到中点（zoom 锁定），不缩放。</p>
       </div>
 
       <footer class="credit">MapLibre GL · GitHub Pages · 无底图 API</footer>
@@ -66,6 +66,7 @@
     </section>
   </main>
   <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+  <script src="js/maplibre-arrows.min.js"></script>
   <script type="module" src="js/app.js"></script>
 </body>
 </html>

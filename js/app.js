@@ -56,6 +56,8 @@ let followMigration = false;
 let cityFrameReady = false;
 const labelMarkers = [];
 const migMarkers = [];
+const FOLLOW_ZOOM = 5.8;
+let migArrows = null;
 
 function yearText(y) {
   return y < 0 ? "前" + Math.abs(y) + "年" : y + "年";
@@ -124,6 +126,39 @@ function branchCentroids() {
   });
 }
 
+function arcControl(from, to) {
+  const [x0, y0] = from;
+  const [x1, y1] = to;
+  const mx = (x0 + x1) / 2;
+  const my = (y0 + y1) / 2;
+  const dx = x1 - x0;
+  const dy = y1 - y0;
+  const len = Math.hypot(dx, dy) || 1;
+  let px = -dy / len;
+  let py = dx / len;
+  // bulge toward higher latitude for short domestic hops
+  if (py < 0) {
+    px = -px;
+    py = -py;
+  }
+  const mag = Math.min(1.35, Math.max(0.28, len * 0.24));
+  return [mx + px * mag, my + py * mag];
+}
+
+function sampleQuadratic(from, to, control, n = 48) {
+  // maplibre-arrows quadratic points order: [start, end, control]
+  const pts = [];
+  for (let i = 0; i <= n; i++) {
+    const t = i / n;
+    const u = 1 - t;
+    pts.push([
+      u * u * from[0] + 2 * u * t * control[0] + t * t * to[0],
+      u * u * from[1] + 2 * u * t * control[1] + t * t * to[1],
+    ]);
+  }
+  return pts;
+}
+
 function migrationBundle(ev, cityName) {
   if (!ev || !ev.from || !ev.to) {
     return {
@@ -133,6 +168,9 @@ function migrationBundle(ev, cityName) {
       bounds: null,
       from: null,
       to: null,
+      control: null,
+      apex: null,
+      mapLabel: "",
     };
   }
   const fromLng = ev.from[1];
@@ -146,32 +184,140 @@ function migrationBundle(ev, cityName) {
     if (parts[0]) fromName = parts[0];
     if (parts[1]) toName = parts[1];
   }
+  const from = [fromLng, fromLat];
+  const to = [toLng, toLat];
+  const control = arcControl(from, to);
+  const coords = sampleQuadratic(from, to, control);
+  const apex = coords[Math.floor(coords.length / 2)];
   return {
     fromName,
     toName,
-    from: [fromLng, fromLat],
-    to: [toLng, toLat],
+    from,
+    to,
+    control,
+    apex,
+    mapLabel: ev.mapLabel || fromName + " → " + toName,
     bounds: [
-      [Math.min(fromLng, toLng), Math.min(fromLat, toLat)],
-      [Math.max(fromLng, toLng), Math.max(fromLat, toLat)],
+      [Math.min(fromLng, toLng, control[0]), Math.min(fromLat, toLat, control[1])],
+      [Math.max(fromLng, toLng, control[0]), Math.max(fromLat, toLat, control[1])],
     ],
     line: {
       type: "FeatureCollection",
       features: [
         {
           type: "Feature",
-          properties: { fromName, toName },
-          geometry: {
-            type: "LineString",
-            coordinates: [
-              [fromLng, fromLat],
-              [toLng, toLat],
-            ],
-          },
+          properties: { fromName, toName, kind: "halo" },
+          geometry: { type: "LineString", coordinates: coords },
         },
       ],
     },
   };
+}
+
+function ensureMigArrows() {
+  const Arrows = globalThis.maplibreArrows;
+  if (migArrows || typeof Arrows !== "function") return;
+  // seed with accent so color layers exist (library has no setArrows)
+  migArrows = new Arrows(map, {
+    arrows: [
+      {
+        layout: "quadratic",
+        lineColor: ui.accent,
+        lineWidth: 4,
+        points: [
+          [119.0, 30.0],
+          [120.0, 31.0],
+          [119.4, 31.1],
+        ],
+        headScale: [1.45, 1.75],
+      },
+    ],
+    sourceId: "mig-arc",
+    layerIdPrefix: "mig-arc",
+  });
+  // map already past "load" — init sources/layers ourselves
+  if (!map.getSource(migArrows.sourceId)) {
+    migArrows.addSource();
+    migArrows.addLayers();
+  }
+}
+
+function updateMigArc(bundle) {
+  ensureMigArrows();
+  if (!migArrows) return;
+  if (!bundle || !bundle.from || !bundle.to || !bundle.control) {
+    migArrows.arrows = [];
+    migArrows.jsonData = [];
+    migArrows.updateSource();
+    return;
+  }
+  // white underlay + cinnabar arc (same quadratic points)
+  const pts = [bundle.from, bundle.to, bundle.control];
+  migArrows.arrows = [
+    {
+      layout: "quadratic",
+      lineColor: "#FFF8F0",
+      lineWidth: 7,
+      points: pts,
+      headScale: [1.35, 1.55],
+    },
+    {
+      layout: "quadratic",
+      lineColor: ui.accent,
+      lineWidth: 3.6,
+      points: pts,
+      headScale: [1.5, 1.85],
+    },
+  ];
+  const nextColors = Array.from(
+    new Set(migArrows.arrows.map((a) => a.lineColor || "black"))
+  );
+  // recreate tail layers if colors changed since first init
+  for (const c of migArrows.lineColors) {
+    const id = `${migArrows.layerIdPrefix}_tails_${c}`;
+    if (map.getLayer(id) && !nextColors.includes(c)) map.removeLayer(id);
+  }
+  migArrows.lineColors = nextColors;
+  migArrows.jsonData = migArrows.computeJsonData(migArrows.arrows);
+  migArrows.updateSource();
+  for (const c of migArrows.lineColors) {
+    const id = `${migArrows.layerIdPrefix}_tails_${c}`;
+    if (!map.getLayer(id)) {
+      map.addLayer(
+        {
+          id,
+          source: migArrows.sourceId,
+          filter: ["all", ["==", "kind", "arrow-tail"], ["==", "color", c]],
+          type: "line",
+          paint: {
+            "line-gradient": [
+              "interpolate",
+              ["linear"],
+              ["line-progress"],
+              0,
+              "transparent",
+              0.25,
+              c,
+            ],
+            "line-width": ["get", "width"],
+          },
+        },
+        migArrows.placeBelow || undefined
+      );
+    }
+  }
+  if (!map.getLayer(`${migArrows.layerIdPrefix}_heads`)) {
+    map.addLayer(
+      {
+        id: `${migArrows.layerIdPrefix}_heads`,
+        source: migArrows.sourceId,
+        filter: ["==", "kind", "arrow-head"],
+        type: "fill",
+        paint: { "fill-color": ["get", "color"] },
+      },
+      migArrows.placeBelow || undefined
+    );
+  }
 }
 
 function renderLegend(html) {
@@ -239,31 +385,25 @@ function fitCityFrame(duration = 0) {
   });
 }
 
-function fitMigration(bounds, toLngLat) {
+function fitMigration(bounds, toLngLat, fromLngLat) {
   if (!followMigration) return;
-  if (!bounds) {
-    fitCityFrame(800);
+  let center = null;
+  if (fromLngLat && toLngLat) {
+    center = [(fromLngLat[0] + toLngLat[0]) / 2, (fromLngLat[1] + toLngLat[1]) / 2];
+  } else if (toLngLat) {
+    center = toLngLat;
+  } else if (bounds) {
+    center = [
+      (bounds[0][0] + bounds[1][0]) / 2,
+      (bounds[0][1] + bounds[1][1]) / 2,
+    ];
+  }
+  if (!center) {
+    map.easeTo({ center: [119.5, 31.2], zoom: FOLLOW_ZOOM, duration: 1000 });
     return;
   }
-  const [[minLng, minLat], [maxLng, maxLat]] = bounds;
-  const padLat = Math.max(0.8, (maxLat - minLat) * 0.25);
-  const padLng = Math.max(0.8, (maxLng - minLng) * 0.2);
-  let b = [
-    [minLng - padLng, minLat - padLat * 0.35],
-    [maxLng + padLng, maxLat + padLat * 1.15],
-  ];
-  if (toLngLat) {
-    b[0][0] = Math.min(b[0][0], toLngLat[0] - 0.6);
-    b[0][1] = Math.min(b[0][1], toLngLat[1] - 0.5);
-    b[1][0] = Math.max(b[1][0], toLngLat[0] + 0.6);
-    b[1][1] = Math.max(b[1][1], toLngLat[1] + 0.9);
-  }
-  map.fitBounds(b, {
-    padding: { top: 96, bottom: 64, left: 56, right: 56 },
-    duration: 900,
-    maxZoom: 6.0,
-    minZoom: 3.6,
-  });
+  // pan only — zoom locked so short/long hops feel the same
+  map.easeTo({ center, zoom: FOLLOW_ZOOM, duration: 1000 });
 }
 
 function setChinaVisible(on) {
@@ -310,6 +450,14 @@ function showMigEndLabels(bundle) {
       .setLngLat(bundle.to)
       .addTo(map)
   );
+  if (bundle.apex && bundle.mapLabel) {
+    const apexEl = makeLabel(bundle.mapLabel, "mig arc-label");
+    migMarkers.push(
+      new maplibregl.Marker({ element: apexEl, anchor: "bottom", offset: [0, -10] })
+        .setLngLat(bundle.apex)
+        .addTo(map)
+    );
+  }
 }
 
 map.on("load", () => {
@@ -322,23 +470,9 @@ map.on("load", () => {
   map.addSource("cities", { type: "geojson", data: citiesGeoJSON() });
   map.addSource("migration", {
     type: "geojson",
+    lineMetrics: true,
     data: { type: "FeatureCollection", features: [] },
   });
-
-  const size = 64;
-  const canvas = document.createElement("canvas");
-  canvas.width = size;
-  canvas.height = size;
-  const ctx = canvas.getContext("2d");
-  ctx.fillStyle = ui.accent;
-  ctx.beginPath();
-  ctx.moveTo(8, 20);
-  ctx.lineTo(size - 4, size / 2);
-  ctx.lineTo(8, size - 20);
-  ctx.lineTo(18, size / 2);
-  ctx.closePath();
-  ctx.fill();
-  map.addImage("mig-arrow", ctx.getImageData(0, 0, size, size), { pixelRatio: 2 });
 
   map.addLayer({
     id: "china-fill",
@@ -397,25 +531,22 @@ map.on("load", () => {
       "circle-opacity": 0,
     },
   });
+  // soft white halo under maplibre-arrows quadratic stroke
   map.addLayer({
-    id: "migration-line",
+    id: "migration-halo",
     type: "line",
     source: "migration",
-    paint: { "line-color": ui.accent, "line-width": 4.5, "line-opacity": 0.92 },
+    paint: {
+      "line-color": "#FFF8F0",
+      "line-width": 8,
+      "line-opacity": 0.55,
+      "line-blur": 0.4,
+    },
     layout: { "line-cap": "round", "line-join": "round" },
   });
-  map.addLayer({
-    id: "migration-arrow",
-    type: "symbol",
-    source: "migration",
-    layout: {
-      "symbol-placement": "line-center",
-      "icon-image": "mig-arrow",
-      "icon-size": 0.6,
-      "icon-allow-overlap": true,
-      "icon-rotation-alignment": "map",
-    },
-  });
+
+  ensureMigArrows();
+  updateMigArc(null);
 
   const popup = new maplibregl.Popup({ closeButton: false, closeOnClick: false, offset: 12 });
   map.on("mousemove", "branches-fill", (e) => {
@@ -502,7 +633,10 @@ function applyBranchPaint() {
 }
 
 function clearMigration() {
-  map.getSource("migration").setData({ type: "FeatureCollection", features: [] });
+  if (map.getSource("migration")) {
+    map.getSource("migration").setData({ type: "FeatureCollection", features: [] });
+  }
+  updateMigArc(null);
   clearMarkers(migMarkers);
 }
 
@@ -618,6 +752,7 @@ function renderCityView(opts = {}) {
   const ev = selectedCity.events[selectedEventIdx];
   const bundle = migrationBundle(ev, selectedCity.name);
   map.getSource("migration").setData(bundle.line);
+  updateMigArc(bundle);
   showCityLabels(selectedCity.id);
   showMigEndLabels(bundle);
 
@@ -640,7 +775,7 @@ function renderCityView(opts = {}) {
     fitCityFrame(camera === "frame" ? 600 : 0);
     cityFrameReady = true;
   } else if (camera === "follow" && followMigration) {
-    fitMigration(bundle.bounds, bundle.to);
+    fitMigration(bundle.bounds, bundle.to, bundle.from);
   }
   // default: no camera move when switching city/event
 }
@@ -873,31 +1008,38 @@ function setMode(next) {
   document.getElementById("branchControls").classList.toggle("hidden", next !== "branch");
   document.getElementById("cityControls").classList.toggle("hidden", next !== "city");
 
-  if (!map.isStyleLoaded()) return;
-  restoreBranchColors();
-  selectedBranchId = null;
-  clearMarkers(labelMarkers);
-  clearMarkers(migMarkers);
+  const applyView = () => {
+    if (mode !== next) return;
+    if (!map.isStyleLoaded()) {
+      map.once("idle", applyView);
+      return;
+    }
+    restoreBranchColors();
+    selectedBranchId = null;
+    clearMarkers(labelMarkers);
+    clearMarkers(migMarkers);
 
-  if (next === "era") {
-    setEra(eraIdx);
-  } else if (next === "branch") {
-    setStory({
-      kicker: "六片分支",
-      title: "点击地图或列表",
-      year: "",
-      body: "单击单选填色，再点取消。悬停只看片名与一句简介。",
-    });
-    [...branchList.children].forEach((li) => li.classList.remove("active"));
-    renderBranchView();
-  } else {
-    selectedCity = data.cities.find((c) => c.id === "yangzhou") || data.cities[0];
-    selectedEventIdx = 0;
-    cityFrameReady = false;
-    syncCityPanel();
-    renderCityView({ camera: "frame" });
-    startCityAutoplay();
-  }
+    if (next === "era") {
+      setEra(eraIdx);
+    } else if (next === "branch") {
+      setStory({
+        kicker: "六片分支",
+        title: "点击地图或列表",
+        year: "",
+        body: "单击单选填色，再点取消。悬停只看片名与一句简介。",
+      });
+      [...branchList.children].forEach((li) => li.classList.remove("active"));
+      renderBranchView();
+    } else {
+      selectedCity = data.cities.find((c) => c.id === "yangzhou") || data.cities[0];
+      selectedEventIdx = 0;
+      cityFrameReady = false;
+      syncCityPanel();
+      renderCityView({ camera: "frame" });
+      startCityAutoplay();
+    }
+  };
+  applyView();
 }
 
 document.getElementById("layerTabs").addEventListener("click", (e) => {

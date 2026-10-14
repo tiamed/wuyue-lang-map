@@ -209,3 +209,13 @@ label { display: block; color: var(--muted); font-size: 0.8rem; margin-bottom: 6
   font-size: 0.78rem; color: var(--muted); cursor: pointer; user-select: none;
 }
 .follow-toggle input { accent-color: var(--accent); }
+
+.map-label.arc-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  background: rgba(255, 248, 240, 0.92);
+  border: 1px solid var(--accent, #8B3A3A);
+  color: var(--accent, #8B3A3A);
+  padding: 2px 7px;
+  box-shadow: 0 1px 3px rgba(44, 42, 40, 0.12);
+}
