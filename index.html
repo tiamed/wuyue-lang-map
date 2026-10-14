@@ -29,6 +29,15 @@
         <div class="story-extra hidden" id="storyExtra"></div>
       </article>
 
+      <div id="cityPlayDock" class="city-play-dock hidden">
+        <div class="play-row">
+          <button type="button" id="playBtn" class="play-btn">播放</button>
+          <span id="playProgress" class="play-progress" aria-live="polite"></span>
+          <label class="follow-toggle"><input type="checkbox" id="followMigration" /> 跟随迁徙</label>
+          <span id="cityMeta" class="meta"></span>
+        </div>
+      </div>
+
       <div id="eraControls" class="layer-pane hidden">
         <div class="era-nav">
           <button type="button" id="eraPrev" class="era-nav-btn">上一段</button>
@@ -51,11 +60,6 @@
       <div id="cityControls" class="layer-pane hidden">
         <p class="hint">点短标签切换城市，停在该城第 1 事；要讲述再点「播放」。说明在故事区与地图信息条更新。</p>
         <div id="cityChips" class="city-chips"></div>
-        <div class="play-row">
-          <button type="button" id="playBtn" class="play-btn">播放</button>
-          <label class="follow-toggle"><input type="checkbox" id="followMigration" /> 跟随迁徙</label>
-          <span id="cityMeta" class="meta"></span>
-        </div>
         <ol id="eventList" class="events"></ol>
         <p class="hint">默认固定视野不缩放；勾选「跟随迁徙」只平移到中点（zoom 锁定），不缩放。</p>
       </div>

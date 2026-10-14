@@ -142,7 +142,21 @@ label { display: block; color: var(--muted); font-size: 0.8rem; margin-bottom: 6
 }
 .story-year { margin: 0 0 8px; font-size: 0.8rem; color: var(--accent); min-height: 1.1em; }
 .story-body { margin: 0; font-size: 0.88rem; line-height: 1.55; color: var(--muted); }
-.play-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 8px; }
+.city-play-dock {
+  position: sticky;
+  top: 0;
+  z-index: 6;
+  margin: 0 0 12px;
+  padding: 8px 0 10px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--line);
+}
+.play-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.play-progress {
+  font-size: 0.78rem;
+  color: var(--muted);
+  min-width: 4.5em;
+}
 .play-btn, .era-nav-btn {
   border: 1px solid var(--line); background: var(--panel); color: var(--accent);
   border-radius: 999px; padding: 6px 12px; font: inherit; font-size: 0.8rem; cursor: pointer;

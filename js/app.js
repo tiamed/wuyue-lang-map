@@ -35,6 +35,8 @@ const cityChips = document.getElementById("cityChips");
 const cityMeta = document.getElementById("cityMeta");
 const eventList = document.getElementById("eventList");
 const playBtn = document.getElementById("playBtn");
+const playProgressEl = document.getElementById("playProgress");
+const cityPlayDock = document.getElementById("cityPlayDock");
 const followMigrationEl = document.getElementById("followMigration");
 const showSubBranchesEl = document.getElementById("showSubBranches");
 const storyKicker = document.getElementById("storyKicker");
@@ -1032,13 +1034,27 @@ window.addEventListener("resize", () => {
   } else fitWuYue();
 });
 
+function updatePlayChrome() {
+  const n = (selectedCity && selectedCity.events) ? selectedCity.events.length : 0;
+  const cur = n ? selectedEventIdx + 1 : 0;
+  if (playProgressEl) {
+    playProgressEl.textContent = n ? `第 ${cur} / ${n} 事` : "";
+  }
+  if (!playTimer) {
+    playBtn.classList.remove("playing");
+    playBtn.textContent = "播放";
+  } else {
+    playBtn.classList.add("playing");
+    playBtn.textContent = "暂停";
+  }
+}
+
 function stopCityPlay() {
   if (playTimer) {
     clearInterval(playTimer);
     playTimer = null;
   }
-  playBtn.classList.remove("playing");
-  playBtn.textContent = "播放";
+  updatePlayChrome();
 }
 
 function stopEraPlay() {
@@ -1337,6 +1353,7 @@ function syncCityPanel() {
     });
     eventList.appendChild(li);
   });
+  updatePlayChrome();
 }
 
 function pickCity(id) {
@@ -1355,14 +1372,14 @@ function startCityAutoplay() {
   selectedEventIdx = 0;
   syncCityPanel();
   renderCityView({ camera: "none" });
-  if (lastIdx === 0) return;
-  playBtn.classList.add("playing");
-  playBtn.textContent = "播放中…";
+  if (lastIdx === 0) {
+    updatePlayChrome();
+    return;
+  }
   let step = 0;
   playTimer = setInterval(() => {
     step += 1;
     if (step > lastIdx) {
-      // 停在最后一件，不循环
       selectedEventIdx = lastIdx;
       syncCityPanel();
       stopCityPlay();
@@ -1371,7 +1388,9 @@ function startCityAutoplay() {
     selectedEventIdx = step;
     syncCityPanel();
     renderCityView({ camera: followMigration ? "follow" : "none" });
+    updatePlayChrome();
   }, 2400);
+  updatePlayChrome();
 }
 
 function buildEraTimeline() {
@@ -1573,6 +1592,7 @@ function setMode(next) {
   document.getElementById("eraControls").classList.toggle("hidden", next !== "era");
   document.getElementById("branchControls").classList.toggle("hidden", next !== "branch");
   document.getElementById("cityControls").classList.toggle("hidden", next !== "city");
+  if (cityPlayDock) cityPlayDock.classList.toggle("hidden", next !== "city");
 
   const applyView = () => {
     if (mode !== next) return;
