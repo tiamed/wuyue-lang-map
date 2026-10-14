@@ -385,3 +385,104 @@ label { display: block; color: var(--muted); font-size: 0.8rem; margin-bottom: 6
   border-radius: 50%;
   background: var(--accent);
 }
+
+.map-label.sub-label {
+  font-size: 10px;
+  padding: 1px 5px;
+  opacity: 0.9;
+  background: rgba(255, 250, 243, 0.9);
+}
+.map-label.sub-label.dim {
+  opacity: 0.35;
+}
+.island-mark {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  pointer-events: none;
+}
+.island-mark .island-ring {
+  position: absolute;
+  inset: 0;
+  border: 2px dashed var(--accent, #8B3A3A);
+  border-radius: 50%;
+  background: rgba(139, 58, 58, 0.08);
+}
+.island-mark .island-star {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent, #8B3A3A);
+  font-size: 14px;
+  line-height: 1;
+  font-weight: 700;
+}
+.island-mark.soft .island-ring {
+  border-style: dotted;
+  border-color: #6E6A64;
+  background: rgba(110, 106, 100, 0.06);
+}
+.island-mark.soft .island-star {
+  color: #6E6A64;
+  font-size: 11px;
+}
+.island-caption {
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  transform: translate(-50%, 2px);
+  white-space: nowrap;
+  font-size: 10px;
+  font-weight: 650;
+  color: var(--accent, #8B3A3A);
+  background: rgba(250, 246, 239, 0.95);
+  border: 1px solid var(--accent, #8B3A3A);
+  border-radius: 6px;
+  padding: 1px 5px;
+  pointer-events: none;
+}
+.island-mark.soft .island-caption {
+  color: var(--muted, #6E6A64);
+  border-color: #C4B6A4;
+}
+.city-chip.special-island .chip-name::after {
+  content: " ★";
+  color: var(--accent);
+  font-size: 0.75em;
+}
+.city-chip.special-exit .chip-branch {
+  color: var(--accent);
+}
+.story-extra {
+  margin: 8px 0 0;
+  padding-top: 8px;
+  border-top: 1px dashed var(--line);
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.story-extra strong {
+  color: var(--ink);
+  font-weight: 650;
+}
+.sub-list {
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.sub-list li {
+  margin: 0 0 6px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: #FFFaf3;
+  border: 1px solid var(--line);
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: var(--muted);
+}
+.sub-list li b {
+  color: var(--ink);
+  font-weight: 650;
+}

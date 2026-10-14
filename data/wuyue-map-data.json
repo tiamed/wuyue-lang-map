@@ -1,7 +1,7 @@
 {
   "meta": {
-    "version": "0.6.2",
-    "note": "v0.6.2：同点事件 showArrow=false，避免退化弧箭",
+    "version": "0.7.0",
+    "note": "v0.7：时段 background/distribution；subBranches 小片；dialectIslands（杭州岛等）",
     "crs": "WGS84"
   },
   "eras": [
@@ -11,14 +11,16 @@
       "yearStart": -770,
       "yearEnd": -221,
       "label": "先秦：古吴越语",
-      "summary": "吴越故地土著语言属非汉语（近侗台底层）。吴、越分国而言语相通，华夏文献多以“夷言”“南蛮鴃舌”视之。",
+      "summary": "吴、越分国而言语相通，文献多称为「夷言」。此时的「吴语」指非汉语的古吴越语底层（近侗台），分布大致在今苏南、浙北至宁绍一…",
       "focusCityIds": [
         "suzhou"
       ],
       "focusBranchIds": [
         "branch-taihu"
       ],
-      "dynastyLabel": "春秋战国"
+      "dynastyLabel": "春秋战国",
+      "background": "吴、越分国而言语相通，文献多称为「夷言」。此时的「吴语」指非汉语的古吴越语底层（近侗台），分布大致在今苏南、浙北至宁绍一带，尚未形成汉语方言意义上的吴语。",
+      "distribution": "核心在太湖—钱塘江流域；越地偏南。华夏语尚未全面覆盖吴越故地。"
     },
     {
       "id": "era-chu-qinhan",
@@ -26,7 +28,7 @@
       "yearStart": -333,
       "yearEnd": 220,
       "label": "楚灭越→秦汉：江东方言萌芽",
-      "summary": "楚语进入吴越，与古越语底层及中原汉语接触，逐渐形成有地方特色的汉语江东方言；开发由苏南浙北向南推进。",
+      "summary": "楚灭越后楚语进入，与古越语底层及中原汉语接触，逐渐形成「江东方言」萌芽。开发由苏南浙北向南推进，语言随之南扩。",
       "focusCityIds": [
         "hangzhou",
         "wenzhou"
@@ -35,7 +37,9 @@
         "branch-taihu",
         "branch-oujiang"
       ],
-      "dynastyLabel": "秦汉"
+      "dynastyLabel": "秦汉",
+      "background": "楚灭越后楚语进入，与古越语底层及中原汉语接触，逐渐形成「江东方言」萌芽。开发由苏南浙北向南推进，语言随之南扩。",
+      "distribution": "汉语性江东方言首先稳在苏南—杭嘉湖—宁绍；浙南、皖南仍开发较晚，古越语底层残留更久。"
     },
     {
       "id": "era-weijin",
@@ -43,7 +47,7 @@
       "yearStart": 220,
       "yearEnd": 589,
       "label": "魏晋南朝：汉语吴语成型",
-      "summary": "北方移民推动方言分化；文献中“吴语”渐指江东方言。吴语作为特征明显的汉语方言，约在此期形成。",
+      "summary": "永嘉南渡使北方移民与江东方言大规模接触。学界多认为特征明显的汉语吴语约在魏晋南北朝形成；文献中「吴语」渐指江东汉语方言。",
       "focusCityIds": [
         "yangzhou",
         "suzhou",
@@ -55,7 +59,9 @@
         "branch-oujiang",
         "branch-taizhou"
       ],
-      "dynastyLabel": "魏晋南北朝"
+      "dynastyLabel": "魏晋南北朝",
+      "background": "永嘉南渡使北方移民与江东方言大规模接触。学界多认为特征明显的汉语吴语约在魏晋南北朝形成；文献中「吴语」渐指江东汉语方言。",
+      "distribution": "北缘可及江淮（扬州一带仍偏吴）；核心在建康—苏州一线；南向永嘉（温州）推进；西缘开始渗入皖南。"
     },
     {
       "id": "era-tang-nbsong",
@@ -63,7 +69,7 @@
       "yearStart": 618,
       "yearEnd": 1127,
       "label": "唐—北宋：吴语巩固南扩",
-      "summary": "吴语格局巩固，地理上由北向南扩展。扬州一带至北宋仍带“吴侬”底色（如苏轼“语音犹自带吴侬”）。",
+      "summary": "吴语巩固，并由北向南扩展。扬州至北宋仍「语音犹自带吴侬」。明州、婺州、台州等政区稳定，为后来南吴各片埋下地理基础。",
       "focusCityIds": [
         "yangzhou",
         "ningbo",
@@ -78,7 +84,9 @@
         "branch-taizhou",
         "branch-jinqu"
       ],
-      "dynastyLabel": "唐—北宋"
+      "dynastyLabel": "唐—北宋",
+      "background": "吴语巩固，并由北向南扩展。扬州至北宋仍「语音犹自带吴侬」。明州、婺州、台州等政区稳定，为后来南吴各片埋下地理基础。",
+      "distribution": "北吴环太湖成型；甬江、台州、瓯江、婺州、处衢等地口音继续分化；江淮沿线开始更多官话渗透但仍存吴语底色。"
     },
     {
       "id": "era-southern-song",
@@ -86,7 +94,7 @@
       "yearStart": 1127,
       "yearEnd": 1279,
       "label": "南宋：各片格局奠基",
-      "summary": "现代吴语各片地理格局基本奠定。建炎南渡使杭州成临安官话岛；江淮沿线（如扬州）加速脱离吴语、转向官话。",
+      "summary": "现代吴语各片地理格局基本奠定。建炎南渡使杭州城厢出现临安官话层（方言岛雏形）；江淮（扬州）加速脱离吴语。",
       "focusCityIds": [
         "yangzhou",
         "hangzhou",
@@ -102,7 +110,9 @@
         "branch-shangli",
         "branch-xuanzhou"
       ],
-      "dynastyLabel": "南宋"
+      "dynastyLabel": "南宋",
+      "background": "现代吴语各片地理格局基本奠定。建炎南渡使杭州城厢出现临安官话层（方言岛雏形）；江淮（扬州）加速脱离吴语。",
+      "distribution": "太湖片主体稳定；杭州城内官话化；南吴台州/瓯江/婺处衢分异清晰；宣州西缘与官话交错加剧；扬州转向江淮官话。"
     },
     {
       "id": "era-mingqing",
@@ -110,7 +120,7 @@
       "yearStart": 1368,
       "yearEnd": 1911,
       "label": "明清：边缘交错与层累",
-      "summary": "宣州、苏北等边缘与官话、徽语交错；明初江南移民（民间称“洪武赶散”）为淮扬叠加吴语成分；徽商等再渗入地方话。",
+      "summary": "明初江南移民叠加淮扬吴语印记；徽商等带来新接触层。宣州吴语受官话、移民冲击，使用空间收缩。上海尚未开埠，苏沪嘉仍为连续体…",
       "focusCityIds": [
         "yangzhou",
         "hangzhou",
@@ -130,7 +140,9 @@
         "branch-oujiang",
         "branch-taizhou"
       ],
-      "dynastyLabel": "明清"
+      "dynastyLabel": "明清",
+      "background": "明初江南移民叠加淮扬吴语印记；徽商等带来新接触层。宣州吴语受官话、移民冲击，使用空间收缩。上海尚未开埠，苏沪嘉仍为连续体。",
+      "distribution": "北吴仍以苏湖为权威；杭州岛稳固；南吴各片相对隔离；宣州片呈破碎状；苏北/江淮残留吴语成分多与移民相关。"
     },
     {
       "id": "era-modern",
@@ -138,7 +150,7 @@
       "yearStart": 1843,
       "yearEnd": 2026,
       "label": "近代至今：通语冲击与六片并存",
-      "summary": "开埠与城市化加速向通语靠拢（以上海最显）。今通行分区约六片：太湖、台州、瓯江、金衢、上丽、宣州。",
+      "summary": "开埠与普通话推广重塑城市口音。上海话崛起取代苏州话成为北吴都市共通语之一；地图集确立六片（及太湖片内小片）框架。",
       "focusCityIds": [
         "hangzhou",
         "suzhou",
@@ -157,7 +169,9 @@
         "branch-shangli",
         "branch-xuanzhou"
       ],
-      "dynastyLabel": "近现代"
+      "dynastyLabel": "近现代",
+      "background": "开埠与普通话推广重塑城市口音。上海话崛起取代苏州话成为北吴都市共通语之一；地图集确立六片（及太湖片内小片）框架。",
+      "distribution": "今六片并存：太湖、台州、瓯江、金衢、上丽、宣州。杭州为太湖片内官话化方言岛；宣州萎缩最显；城市通语层普遍叠加。"
     }
   ],
   "branches": [
@@ -183,7 +197,16 @@
         "宁波市",
         "舟山市"
       ],
-      "shortTip": "北区主体，人口最多，内部相对可通"
+      "shortTip": "北区主体，人口最多，内部相对可通",
+      "subBranchIds": [
+        "sub-piling",
+        "sub-sujiahu",
+        "sub-shanghai",
+        "sub-hangzhou",
+        "sub-linshao",
+        "sub-yongjiang"
+      ],
+      "background": "北部吴语主体，环太湖分布。内分毗陵、苏嘉湖、上海、杭州、临绍、甬江等小片（分区名在旧「苏沪嘉/苕溪」与新「苏嘉湖/上海」之间略有调整）。杭州小片为著名官话化方言岛。"
     },
     {
       "id": "branch-taizhou",
@@ -196,7 +219,11 @@
       "admins": [
         "台州市"
       ],
-      "shortTip": "南吴近北缘，比瓯江好懂一些"
+      "shortTip": "南吴近北缘，比瓯江好懂一些",
+      "subBranchIds": [
+        "sub-taizhou-core"
+      ],
+      "background": "南吴北缘，语音相对近北吴；与瓯江片隔阂大。"
     },
     {
       "id": "branch-oujiang",
@@ -209,7 +236,11 @@
       "admins": [
         "温州市"
       ],
-      "shortTip": "温州核心，吴语最难互通的一片"
+      "shortTip": "温州核心，吴语最难互通的一片",
+      "subBranchIds": [
+        "sub-oujiang-core"
+      ],
+      "background": "以温州为核心的南吴保守区，内部相对一致、对外最难通。"
     },
     {
       "id": "branch-jinqu",
@@ -223,7 +254,11 @@
         "金华市",
         "衢州市"
       ],
-      "shortTip": "浙中金衢，片内分歧大"
+      "shortTip": "浙中金衢，片内分歧大",
+      "subBranchIds": [
+        "sub-jinqu-wu"
+      ],
+      "background": "浙中金衢（含旧婺州及部分处衢点），片内分歧大。"
     },
     {
       "id": "branch-shangli",
@@ -236,7 +271,11 @@
       "admins": [
         "丽水市"
       ],
-      "shortTip": "丽水一带，与邻片通话困难"
+      "shortTip": "丽水一带，与邻片通话困难",
+      "subBranchIds": [
+        "sub-shangli-li"
+      ],
+      "background": "浙南上丽（旧处衢调整），与邻片通话困难。"
     },
     {
       "id": "branch-xuanzhou",
@@ -253,7 +292,13 @@
         "池州市",
         "马鞍山市"
       ],
-      "shortTip": "皖南西吴，和官话、徽语交错"
+      "shortTip": "皖南西吴，和官话、徽语交错",
+      "subBranchIds": [
+        "sub-tongjing",
+        "sub-taigao",
+        "sub-shiling"
+      ],
+      "background": "西区吴语，散在皖南等地。内分铜泾、太高、石陵；与官话、徽语交错，萎缩最明显。"
     }
   ],
   "cities": [
@@ -364,7 +409,9 @@
       ],
       "shortTip": "吴语底层→江淮官话的典型「换血」样本",
       "blurb": "春秋属吴越语底层；隋唐仍「好为吴语」；南宋建炎后加速官话化；明初苏人与徽商再叠层。今属江淮官话洪巢片。",
-      "mapLabel": "扬州"
+      "mapLabel": "扬州",
+      "special": "exitedWu",
+      "islandNote": "已退出吴语，今江淮官话；展示历史换血，不参与六片填色。"
     },
     {
       "id": "hangzhou",
@@ -439,9 +486,11 @@
           "showArrow": false
         }
       ],
-      "shortTip": "南宋定都后形成的「官话岛」",
+      "shortTip": "方言岛：南宋官话层·杭州小片",
       "blurb": "土著本为吴语；建炎南渡后汴洛官话压城，杭州话在太湖片中特立，常被称作临安官话影响下的方言岛。",
-      "mapLabel": "杭州"
+      "mapLabel": "杭州",
+      "special": "dialectIsland",
+      "islandNote": "太湖片杭州小片：南宋临安官话层造成的方言岛，官话与吴语双重特质。"
     },
     {
       "id": "suzhou",
@@ -21732,9 +21781,9 @@
     ]
   },
   "ux": {
-    "branchLayer": "单击单选/再点取消；悬停 shortTip（片名+一句）；勿堆 admins",
+    "branchLayer": "六片填色外，可叠加 subBranches 中心点标注；dialectIslands 用特殊符号（星/虚线框）强调杭州岛",
     "cityLayer": "不要用下拉做主切换：地图上常显 9 城圆点+地名；点地图或左侧城市卡片切换。当前城高亮轮廓；事件列表可点；迁徙箭头跟当前事件，底垫中国省界。",
-    "eraLayer": "滑条同时点亮 focusBranchIds 面 + focusCityIds 点；旁白用 summary；地图需占满右侧",
+    "eraLayer": "旁白优先 background；副文显示 distribution；横轴仍用 dynasty",
     "timeline": "横轴：下层朝代色带，上层世纪刻度；长时段高亮区间，城市个案高亮事件点",
     "migration": "仅 showArrow=true 画弧；换城须清空旧 arrow 实例；勿叠两层不同色造成假渐变；零长度不要画"
   },
@@ -21867,5 +21916,166 @@
       }
     ],
     "note": "朝代起讫为示意标注，便于横轴阅读，非精细年表"
-  }
+  },
+  "subBranches": [
+    {
+      "id": "sub-piling",
+      "parent": "branch-taihu",
+      "name": "毗陵小片",
+      "lat": 31.75,
+      "lng": 119.95,
+      "summary": "常州一带；邻近江淮官话，受影响较大。人称代词偏官话型「我你他」。",
+      "area": "常州、溧阳、宜兴及镇江丹阳等，并及皖南郎溪、广德部分"
+    },
+    {
+      "id": "sub-sujiahu",
+      "parent": "branch-taihu",
+      "name": "苏嘉湖小片",
+      "lat": 31.05,
+      "lng": 120.55,
+      "summary": "苏州、无锡、嘉兴、湖州等，北吴主流「软语」核心。",
+      "area": "苏南东部与浙北嘉湖（新分法常把原苕溪并入）"
+    },
+    {
+      "id": "sub-shanghai",
+      "parent": "branch-taihu",
+      "name": "上海小片",
+      "lat": 31.23,
+      "lng": 121.47,
+      "summary": "上海市区及周边；开埠后演变快，近代渐成北吴都市共通语之一。",
+      "area": "上海及长江口崇启海等相关点"
+    },
+    {
+      "id": "sub-hangzhou",
+      "parent": "branch-taihu",
+      "name": "杭州小片",
+      "lat": 30.27,
+      "lng": 120.15,
+      "summary": "典型方言岛：宋室南渡汴洛官话入城，官话与吴语双重特质。",
+      "area": "杭州老城厢及近郊（范围最小的吴语小片之一）",
+      "special": "dialectIsland"
+    },
+    {
+      "id": "sub-linshao",
+      "parent": "branch-taihu",
+      "name": "临绍小片",
+      "lat": 30.0,
+      "lng": 120.55,
+      "summary": "临安—绍兴一带；与南吴联系相对更近，乡区与苏沪通话可有困难。",
+      "area": "临安、富阳、萧山、绍兴、诸暨、上虞等"
+    },
+    {
+      "id": "sub-yongjiang",
+      "parent": "branch-taihu",
+      "name": "甬江小片",
+      "lat": 29.87,
+      "lng": 121.55,
+      "summary": "宁波、舟山；太湖片南缘，传统上与南吴联系强。",
+      "area": "甬江流域及舟山"
+    },
+    {
+      "id": "sub-tongjing",
+      "parent": "branch-xuanzhou",
+      "name": "铜泾小片",
+      "lat": 30.95,
+      "lng": 118.45,
+      "summary": "宣州片主体；古全浊多已通音化；家庭内使用、对外常转官话。",
+      "area": "铜陵、泾县、繁昌、南陵、宣城部分、芜湖县等"
+    },
+    {
+      "id": "sub-taigao",
+      "parent": "branch-xuanzhou",
+      "name": "太高小片",
+      "lat": 31.2,
+      "lng": 119.0,
+      "summary": "古全浊声母尚未通音化，保留较「老」的西吴特征。",
+      "area": "高淳西部、溧水南部、黄山区部分、临安昌北等"
+    },
+    {
+      "id": "sub-shiling",
+      "parent": "branch-xuanzhou",
+      "name": "石陵小片",
+      "lat": 30.55,
+      "lng": 117.95,
+      "summary": "全浊多清化，磨损较快；太平天国后移民冲击大，萎缩明显。",
+      "area": "石台中部、青阳东南、泾县西南等"
+    },
+    {
+      "id": "sub-taizhou-core",
+      "parent": "branch-taizhou",
+      "name": "台州片（核心）",
+      "lat": 28.66,
+      "lng": 121.42,
+      "summary": "临海—黄岩—温岭一带；南吴中相对近北吴。",
+      "area": "台州诸县市及邻近过渡点"
+    },
+    {
+      "id": "sub-oujiang-core",
+      "parent": "branch-oujiang",
+      "name": "瓯江片（温州）",
+      "lat": 28.0,
+      "lng": 120.7,
+      "summary": "以温州市区话为核心，吴语最难互通的一支。",
+      "area": "温州、永嘉、瑞安、乐清南部等"
+    },
+    {
+      "id": "sub-jinqu-wu",
+      "parent": "branch-jinqu",
+      "name": "金衢片（婺州侧）",
+      "lat": 29.08,
+      "lng": 119.65,
+      "summary": "旧婺州话区；县市分歧大，一县一音感强。",
+      "area": "金华及周边义乌东阳永康等"
+    },
+    {
+      "id": "sub-shangli-li",
+      "parent": "branch-shangli",
+      "name": "上丽片（丽水侧）",
+      "lat": 28.45,
+      "lng": 119.92,
+      "summary": "旧处衢调整后的一片；与邻片通话困难。",
+      "area": "丽水及周边上丽诸点"
+    }
+  ],
+  "dialectIslands": [
+    {
+      "id": "island-hangzhou",
+      "name": "杭州话方言岛",
+      "lat": 30.27,
+      "lng": 120.15,
+      "parent": "branch-taihu",
+      "subBranch": "sub-hangzhou",
+      "kind": "官话化吴语岛",
+      "period": "南宋定都临安以降",
+      "summary": "宋室南渡带来汴洛官话，杭州城厢形成太湖片内特立的杭州小片。兼具官话与吴语特征，范围大致限于老城区及近郊，是吴语区著名方言岛。",
+      "mapLabel": "杭州方言岛",
+      "emphasis": true
+    },
+    {
+      "id": "island-piling-contact",
+      "name": "毗陵—江淮接触带",
+      "lat": 31.75,
+      "lng": 119.95,
+      "parent": "branch-taihu",
+      "subBranch": "sub-piling",
+      "kind": "官话接触带",
+      "period": "宋元以降加强",
+      "summary": "毗陵小片北接江淮官话，人称代词等已偏官话型，虽仍属吴语，但是北缘接触带而非典型「岛」。",
+      "mapLabel": "毗陵接触带",
+      "emphasis": false
+    },
+    {
+      "id": "note-yangzhou-exit",
+      "name": "扬州：已退出吴语",
+      "lat": 32.39,
+      "lng": 119.42,
+      "parent": null,
+      "kind": "历史换血→江淮官话",
+      "period": "建炎南渡为关键转折",
+      "summary": "今属江淮官话，不是吴语方言岛；而是吴语底层被官话替换后的「退出」样本，故放在城市个案而非六片填色。",
+      "mapLabel": "扬州（已非吴语）",
+      "emphasis": true
+    }
+  ],
+  "partitionNote": "六片框架依《中国语言地图集》系统；太湖片小片同时标注常见「苏嘉湖/上海」新分法。杭州为强调的方言岛；扬州为已退出吴语的换血样本。示意标注，非村级同言线。"
 }

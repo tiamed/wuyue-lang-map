@@ -39,6 +39,7 @@ const storyKicker = document.getElementById("storyKicker");
 const storyTitle = document.getElementById("storyTitle");
 const storyYear = document.getElementById("storyYear");
 const storyBody = document.getElementById("storyBody");
+const storyExtra = document.getElementById("storyExtra");
 const eraTimeline = document.getElementById("eraTimeline");
 const eraProgressBar = document.getElementById("eraProgressBar");
 const eraPrev = document.getElementById("eraPrev");
@@ -182,11 +183,18 @@ function shortTip(props) {
   return tip.length > 48 ? tip.slice(0, 48) + "…" : tip;
 }
 
-function setStory({ kicker, title, year, body }) {
+function setStory({ kicker, title, year, body, extraHtml }) {
   storyKicker.textContent = kicker || "";
   storyTitle.textContent = title || "";
   storyYear.textContent = year || "";
   storyBody.textContent = body || "";
+  if (extraHtml) {
+    storyExtra.innerHTML = extraHtml;
+    storyExtra.classList.remove("hidden");
+  } else {
+    storyExtra.innerHTML = "";
+    storyExtra.classList.add("hidden");
+  }
 }
 
 function clearMarkers(arr) {
@@ -208,10 +216,85 @@ function citiesGeoJSON() {
     type: "FeatureCollection",
     features: data.cities.map((c) => ({
       type: "Feature",
-      properties: { id: c.id, name: c.name, branch: c.branch },
+      properties: {
+        id: c.id,
+        name: c.name,
+        branch: c.branch,
+        special: c.special || "",
+      },
       geometry: { type: "Point", coordinates: [c.lng, c.lat] },
     })),
   };
+}
+
+function subBranchesGeoJSON() {
+  const list = data.subBranches || [];
+  return {
+    type: "FeatureCollection",
+    features: list.map((s) => ({
+      type: "Feature",
+      properties: {
+        id: s.id,
+        name: s.name,
+        parent: s.parent,
+        summary: s.summary || "",
+        area: s.area || "",
+        island: s.id === "sub-hangzhou",
+      },
+      geometry: { type: "Point", coordinates: [s.lng, s.lat] },
+    })),
+  };
+}
+
+function setSubBranchLayersVisible(on) {
+  const vis = on ? "visible" : "none";
+  if (map.getLayer("sub-branches-circle")) {
+    map.setLayoutProperty("sub-branches-circle", "visibility", vis);
+  }
+  if (map.getLayer("sub-branches-hangzhou")) {
+    map.setLayoutProperty("sub-branches-hangzhou", "visibility", vis);
+  }
+}
+
+function makeIslandMark(island) {
+  const el = document.createElement("div");
+  el.className = "island-mark" + (island.emphasis ? "" : " soft");
+  el.innerHTML = `<div class="island-ring"></div><div class="island-star">${island.emphasis ? "★" : "•"}</div><div class="island-caption">${island.mapLabel || island.name}</div>`;
+  el.title = `${island.name} · ${island.kind || ""}
+${island.summary || ""}`;
+  return el;
+}
+
+function showIslandMarks(filterFn) {
+  const islands = data.dialectIslands || [];
+  islands.forEach((island) => {
+    if (filterFn && !filterFn(island)) return;
+    const el = makeIslandMark(island);
+    labelMarkers.push(
+      new maplibregl.Marker({ element: el, anchor: "center" })
+        .setLngLat([island.lng, island.lat])
+        .addTo(map)
+    );
+  });
+}
+
+function subBranchesForParent(parentId) {
+  return (data.subBranches || []).filter((s) => s.parent === parentId);
+}
+
+function subListHtml(parentId) {
+  const subs = subBranchesForParent(parentId);
+  if (!subs.length) return "";
+  return (
+    `<strong>片内小片</strong><ul class="sub-list">` +
+    subs
+      .map((s) => {
+        const star = s.id === "sub-hangzhou" ? " ★" : "";
+        return `<li><b>${s.name}${star}</b> — ${s.summary || s.area || ""}</li>`;
+      })
+      .join("") +
+    `</ul>`
+  );
 }
 
 function branchCentroids() {
@@ -562,6 +645,20 @@ function showBranchLabels() {
       .addTo(map);
     labelMarkers.push(marker);
   });
+  // 小片中心点旁注（杭州小片留给星标，避免叠字）
+  (data.subBranches || []).forEach((s) => {
+    if (s.id === "sub-hangzhou") return;
+    const dim =
+      selectedBranchId && s.parent !== selectedBranchId ? " dim" : "";
+    const el = makeLabel(s.name.replace(/小片|（.*）/g, "").trim() || s.name, "sub-label" + dim);
+    labelMarkers.push(
+      new maplibregl.Marker({ element: el, anchor: "top", offset: [0, 6] })
+        .setLngLat([s.lng, s.lat])
+        .addTo(map)
+    );
+  });
+  // 方言岛 / 特殊点：杭州星标虚线框；接触带弱标；扬州已退出不在六片层画
+  showIslandMarks((island) => island.id !== "note-yangzhou-exit");
 }
 
 function showMigEndLabels(bundle) {
@@ -628,6 +725,33 @@ map.on("load", () => {
     type: "line",
     source: "branches",
     paint: { "line-color": "#FFFaf3", "line-width": 1 },
+  });
+  map.addSource("sub-branches", { type: "geojson", data: subBranchesGeoJSON() });
+  map.addLayer({
+    id: "sub-branches-circle",
+    type: "circle",
+    source: "sub-branches",
+    filter: ["!=", ["get", "id"], "sub-hangzhou"],
+    paint: {
+      "circle-radius": 4,
+      "circle-color": ui.ink,
+      "circle-opacity": 0.55,
+      "circle-stroke-color": "#FFFaf3",
+      "circle-stroke-width": 1.2,
+    },
+  });
+  map.addLayer({
+    id: "sub-branches-hangzhou",
+    type: "circle",
+    source: "sub-branches",
+    filter: ["==", ["get", "id"], "sub-hangzhou"],
+    paint: {
+      "circle-radius": 7,
+      "circle-color": "rgba(139,58,58,0.15)",
+      "circle-stroke-color": ui.accent,
+      "circle-stroke-width": 2,
+      "circle-stroke-opacity": 0.95,
+    },
   });
   map.addLayer({
     id: "city-outline-fill",
@@ -698,6 +822,33 @@ map.on("load", () => {
     if (mode !== "branch") return;
     const f = e.features && e.features[0];
     if (f) selectBranch(f.properties.id);
+  });
+  map.on("mousemove", "sub-branches-circle", (e) => {
+    if (mode !== "branch") return;
+    map.getCanvas().style.cursor = "pointer";
+    const f = e.features && e.features[0];
+    if (!f) return;
+    popup
+      .setLngLat(e.lngLat)
+      .setHTML(
+        `<strong>${f.properties.name}</strong><div style="margin-top:4px;font-size:12px;opacity:.85">${f.properties.summary || f.properties.area || ""}</div>`
+      )
+      .addTo(map);
+  });
+  map.on("mouseleave", "sub-branches-circle", () => {
+    if (mode !== "branch") return;
+    map.getCanvas().style.cursor = "";
+    popup.remove();
+  });
+  map.on("click", "sub-branches-circle", (e) => {
+    if (mode !== "branch") return;
+    const f = e.features && e.features[0];
+    if (f && f.properties.parent) selectBranch(f.properties.parent);
+  });
+  map.on("click", "sub-branches-hangzhou", (e) => {
+    if (mode !== "branch") return;
+    const f = e.features && e.features[0];
+    if (f && f.properties.parent) selectBranch(f.properties.parent);
   });
   map.on("click", "cities-circle", (e) => {
     if (mode !== "city" && mode !== "era") return;
@@ -788,18 +939,24 @@ function renderBranchView() {
   hideTimeAxis();
   setChinaVisible(false);
   clearMigration();
+  setSubBranchLayersVisible(true);
   map.setPaintProperty("cities-circle", "circle-opacity", 0);
   map.setFilter("city-outline-fill", ["==", ["get", "id"], ""]);
   map.setFilter("city-outline-line", ["==", ["get", "id"], ""]);
   applyBranchPaint();
   showBranchLabels();
+  const note = data.partitionNote
+    ? `<div class="row" style="margin-top:4px;opacity:.85">${data.partitionNote.slice(0, 42)}…</div>`
+    : "";
   renderLegend(
     data.branchGeoJSON.features
       .map(
         (f) =>
           `<div class="row"><i style="background:${f.properties.fillColor}"></i>${f.properties.name}</div>`
       )
-      .join("")
+      .join("") +
+      `<div class="row"><i style="background:${ui.accent};border-radius:50%"></i>★ 杭州方言岛</div>` +
+      note
   );
   fitWuYue(400);
 }
@@ -811,7 +968,7 @@ function selectBranch(id) {
       kicker: "六片分支",
       title: "点击地图或列表",
       year: "",
-      body: "单击单选填色，再点取消。悬停只看片名与一句简介。",
+      body: "单击单选填色，再点取消。悬停看片/小片简介；杭州★为方言岛。",
     });
   } else {
     selectedBranchId = id;
@@ -822,6 +979,7 @@ function selectBranch(id) {
         title: f.properties.name,
         year: "",
         body: f.properties.summary || shortTip(f.properties),
+        extraHtml: subListHtml(id),
       });
     }
   }
@@ -829,6 +987,7 @@ function selectBranch(id) {
     li.classList.toggle("active", li.dataset.id === selectedBranchId);
   });
   applyBranchPaint();
+  if (mode === "branch") showBranchLabels();
 }
 
 function buildBranchList() {
@@ -848,7 +1007,13 @@ function buildCityChips() {
   data.cities.forEach((c) => {
     const btn = document.createElement("button");
     btn.type = "button";
-    btn.className = "city-chip";
+    btn.className =
+      "city-chip" +
+      (c.special === "dialectIsland"
+        ? " special-island"
+        : c.special === "exitedWu"
+          ? " special-exit"
+          : "");
     btn.dataset.id = c.id;
     const tip = (c.blurb || c.shortTip || "").slice(0, 28);
     btn.innerHTML = `<span class="chip-name">${c.name}</span><span class="chip-branch">${c.branch}</span>${tip ? `<span class="chip-blurb">${tip}${ (c.blurb||c.shortTip||"").length>28 ? "…" : ""}</span>` : ""}`;
@@ -858,6 +1023,7 @@ function buildCityChips() {
 }
 
 function renderCityView(opts = {}) {
+  setSubBranchLayersVisible(false);
   setChinaVisible(true);
   restoreBranchColors();
   map.setPaintProperty("branches-fill", "fill-opacity", 0.42);
@@ -891,6 +1057,9 @@ function renderCityView(opts = {}) {
 
   const migLine =
     bundle.showArrow && (ev.mapLabel || (bundle.fromName + " → " + bundle.toName));
+  const islandExtra = selectedCity.islandNote
+    ? `<strong>${selectedCity.special === "dialectIsland" ? "方言岛" : selectedCity.special === "exitedWu" ? "已退出吴语" : "特记"}</strong><div style="margin-top:4px">${selectedCity.islandNote}</div>`
+    : "";
   setStory({
     kicker: "城市个案 · " + selectedCity.name,
     title: ev ? ev.title : selectedCity.name,
@@ -898,6 +1067,7 @@ function renderCityView(opts = {}) {
     body: ev
       ? `${migLine ? "迁徙：" + migLine + "\n\n" : ""}${ev.body}`
       : (selectedCity.blurb || ""),
+    extraHtml: islandExtra,
   });
 
   renderLegend(
@@ -996,14 +1166,19 @@ function renderEraView() {
   const focusIds = era.focusBranchIds || [];
   const focusCities = [...(era.focusCityIds || [])];
 
+  setSubBranchLayersVisible(false);
   setChinaVisible(false);
   clearMigration();
 
+  const dist = era.distribution
+    ? `<strong>分布</strong><div style="margin-top:4px">${era.distribution}</div>`
+    : "";
   setStory({
     kicker: "长时段",
     title: era.label,
     year: `${yearText(era.yearStart)} — ${yearText(era.yearEnd)}${era.dynastyLabel ? " · " + era.dynastyLabel : ""}`,
-    body: era.summary,
+    body: era.background || era.summary,
+    extraHtml: dist,
   });
 
   restoreBranchColors();
