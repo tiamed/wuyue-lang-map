@@ -44,6 +44,12 @@ const eraProgressBar = document.getElementById("eraProgressBar");
 const eraPrev = document.getElementById("eraPrev");
 const eraNext = document.getElementById("eraNext");
 const eraPlay = document.getElementById("eraPlay");
+const timeAxisEl = document.getElementById("timeAxis");
+const timeAxisDynasties = document.getElementById("timeAxisDynasties");
+const timeAxisRanges = document.getElementById("timeAxisRanges");
+const timeAxisTicks = document.getElementById("timeAxisTicks");
+const timeAxisDots = document.getElementById("timeAxisDots");
+const timeAxisNeedle = document.getElementById("timeAxisNeedle");
 
 let mode = "branch";
 let selectedBranchId = null;
@@ -61,6 +67,112 @@ let migArrows = null;
 
 function yearText(y) {
   return y < 0 ? "前" + Math.abs(y) + "年" : y + "年";
+}
+
+const timelineMeta = data.timeline || {};
+const AXIS_MIN = timelineMeta.yearStart != null ? timelineMeta.yearStart : -800;
+const AXIS_MAX = timelineMeta.yearEnd != null ? timelineMeta.yearEnd : 2026;
+const DYNASTY_COLORS = [
+  "#E8D5C4", "#D9C4B0", "#E2D2B8", "#C9D5C4", "#B7C9BE",
+  "#C5D0D6", "#D2C6D8", "#E0C9C0", "#D8C8A8", "#C4B8A8",
+  "#D6B8B0", "#C8B0A0", "#B8C4C0",
+];
+
+function yearToPct(y) {
+  const t = (Number(y) - AXIS_MIN) / (AXIS_MAX - AXIS_MIN);
+  return Math.max(0, Math.min(100, t * 100));
+}
+
+function buildTimeAxisStatic() {
+  const ticks = timelineMeta.ticks || [
+    { year: -500, label: "前5世纪" },
+    { year: 0, label: "公元" },
+    { year: 500, label: "500" },
+    { year: 1000, label: "1000" },
+    { year: 1500, label: "1500" },
+    { year: 2000, label: "今" },
+  ];
+  timeAxisTicks.innerHTML = ticks
+    .map((t) => {
+      const left = yearToPct(t.year);
+      return `<div class="time-axis-tick" style="left:${left}%"><span>${t.label}</span></div>`;
+    })
+    .join("");
+
+  const dynasties = timelineMeta.dynasties || [];
+  timeAxisDynasties.innerHTML = dynasties
+    .map((d, i) => {
+      const left = yearToPct(d.yearStart);
+      const right = yearToPct(d.yearEnd);
+      const width = Math.max(0.4, right - left);
+      const color = DYNASTY_COLORS[i % DYNASTY_COLORS.length];
+      const showLabel = width >= 3.2;
+      return `<div class="time-axis-dynasty" style="left:${left}%;width:${width}%;background:${color}" title="${d.label}（${yearText(d.yearStart)}–${yearText(d.yearEnd)}）">${showLabel ? `<span>${d.label}</span>` : ""}</div>`;
+    })
+    .join("");
+}
+
+function setTimeAxisVisible(on) {
+  timeAxisEl.classList.toggle("hidden", !on);
+}
+
+function renderTimeAxisEra() {
+  setTimeAxisVisible(true);
+  timeAxisDots.innerHTML = "";
+  timeAxisNeedle.classList.add("hidden");
+  timeAxisRanges.innerHTML = data.eras
+    .map((era, i) => {
+      const left = yearToPct(era.yearStart);
+      const right = yearToPct(era.yearEnd);
+      const width = Math.max(0.8, right - left);
+      const active = i === eraIdx ? " active" : "";
+      const tip = `${era.label}${era.dynastyLabel ? " · " + era.dynastyLabel : ""}（${yearText(era.yearStart)}–${yearText(era.yearEnd)}）`;
+      return `<div class="time-axis-range${active}" data-era-idx="${i}" style="left:${left}%;width:${width}%" title="${tip}"></div>`;
+    })
+    .join("");
+  timeAxisRanges.querySelectorAll(".time-axis-range").forEach((el) => {
+    el.addEventListener("click", () => {
+      stopEraPlay();
+      setEra(Number(el.dataset.eraIdx));
+    });
+  });
+}
+
+function renderTimeAxisCity() {
+  setTimeAxisVisible(true);
+  timeAxisRanges.innerHTML = "";
+  const events = selectedCity.events || [];
+  timeAxisDots.innerHTML = events
+    .map((ev, i) => {
+      const left = yearToPct(ev.year);
+      const active = i === selectedEventIdx ? " active" : "";
+      const tip = `${yearText(ev.year)} · ${ev.title}`;
+      return `<button type="button" class="time-axis-dot${active}" data-ev-idx="${i}" style="left:${left}%" title="${tip}" aria-label="${tip}"></button>`;
+    })
+    .join("");
+  timeAxisDots.querySelectorAll(".time-axis-dot").forEach((el) => {
+    el.addEventListener("click", () => {
+      stopCityPlay();
+      selectedEventIdx = Number(el.dataset.evIdx);
+      syncCityPanel();
+      renderCityView({ camera: followMigration ? "follow" : "none" });
+    });
+  });
+  const ev = events[selectedEventIdx];
+  if (ev) {
+    const pct = yearToPct(ev.year);
+    timeAxisNeedle.style.left = `calc(12px + (100% - 24px) * ${pct / 100})`;
+    timeAxisNeedle.classList.remove("hidden");
+  } else {
+    timeAxisNeedle.classList.add("hidden");
+  }
+}
+
+function hideTimeAxis() {
+  setTimeAxisVisible(false);
+  timeAxisRanges.innerHTML = "";
+  timeAxisDots.innerHTML = "";
+  timeAxisNeedle.classList.add("hidden");
 }
 
 function shortTip(props) {
@@ -580,6 +692,7 @@ map.on("load", () => {
   buildBranchList();
   buildCityChips();
   buildEraTimeline();
+  buildTimeAxisStatic();
   setMode("branch");
 });
 
@@ -655,6 +768,7 @@ function restoreBranchColors() {
 }
 
 function renderBranchView() {
+  hideTimeAxis();
   setChinaVisible(false);
   clearMigration();
   map.setPaintProperty("cities-circle", "circle-opacity", 0);
@@ -770,6 +884,7 @@ function renderCityView(opts = {}) {
      <div class="row"><i style="background:${ui.accent}"></i>${ev && ev.mapLabel ? ev.mapLabel : (bundle.fromName + " → " + bundle.toName)}</div>
      <div class="row"><i style="background:${ui.cityStroke}"></i>${selectedCity.name} 轮廓</div>`
   );
+  renderTimeAxisCity();
   const camera = opts.camera || "none";
   if (camera === "frame" || (!cityFrameReady && camera !== "follow")) {
     fitCityFrame(camera === "frame" ? 600 : 0);
@@ -865,7 +980,7 @@ function renderEraView() {
   setStory({
     kicker: "长时段",
     title: era.label,
-    year: `${yearText(era.yearStart)} — ${yearText(era.yearEnd)}`,
+    year: `${yearText(era.yearStart)} — ${yearText(era.yearEnd)}${era.dynastyLabel ? " · " + era.dynastyLabel : ""}`,
     body: era.summary,
   });
 
@@ -946,6 +1061,7 @@ function renderEraView() {
   renderLegend(
     `<div class="row"><i style="background:${ui.accent}"></i>本段亮起：${names.join("、") || "—"}</div>`
   );
+  renderTimeAxisEra();
   fitWuYue(400);
 }
 

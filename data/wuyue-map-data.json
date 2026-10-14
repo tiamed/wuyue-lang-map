@@ -1,7 +1,7 @@
 {
   "meta": {
-    "version": "0.6.0",
-    "note": "v0.6：城市文案加厚；shortTip/blurb/mapLabel；迁徙事件带 mapLabel；城市个案垫 china-provinces 今界示意",
+    "version": "0.6.1",
+    "note": "v0.6.1：横轴 timeline.dynasties / ticks；eras 带 dynastyLabel",
     "crs": "WGS84"
   },
   "eras": [
@@ -17,7 +17,8 @@
       ],
       "focusBranchIds": [
         "branch-taihu"
-      ]
+      ],
+      "dynastyLabel": "春秋战国"
     },
     {
       "id": "era-chu-qinhan",
@@ -33,7 +34,8 @@
       "focusBranchIds": [
         "branch-taihu",
         "branch-oujiang"
-      ]
+      ],
+      "dynastyLabel": "秦汉"
     },
     {
       "id": "era-weijin",
@@ -52,7 +54,8 @@
         "branch-taihu",
         "branch-oujiang",
         "branch-taizhou"
-      ]
+      ],
+      "dynastyLabel": "魏晋南北朝"
     },
     {
       "id": "era-tang-nbsong",
@@ -74,7 +77,8 @@
         "branch-oujiang",
         "branch-taizhou",
         "branch-jinqu"
-      ]
+      ],
+      "dynastyLabel": "唐—北宋"
     },
     {
       "id": "era-southern-song",
@@ -97,7 +101,8 @@
         "branch-jinqu",
         "branch-shangli",
         "branch-xuanzhou"
-      ]
+      ],
+      "dynastyLabel": "南宋"
     },
     {
       "id": "era-mingqing",
@@ -124,7 +129,8 @@
         "branch-jinqu",
         "branch-oujiang",
         "branch-taizhou"
-      ]
+      ],
+      "dynastyLabel": "明清"
     },
     {
       "id": "era-modern",
@@ -150,7 +156,8 @@
         "branch-jinqu",
         "branch-shangli",
         "branch-xuanzhou"
-      ]
+      ],
+      "dynastyLabel": "近现代"
     }
   ],
   "branches": [
@@ -21689,7 +21696,8 @@
   "ux": {
     "branchLayer": "单击单选/再点取消；悬停 shortTip（片名+一句）；勿堆 admins",
     "cityLayer": "不要用下拉做主切换：地图上常显 9 城圆点+地名；点地图或左侧城市卡片切换。当前城高亮轮廓；事件列表可点；迁徙箭头跟当前事件，底垫中国省界。",
-    "eraLayer": "滑条同时点亮 focusBranchIds 面 + focusCityIds 点；旁白用 summary；地图需占满右侧"
+    "eraLayer": "滑条同时点亮 focusBranchIds 面 + focusCityIds 点；旁白用 summary；地图需占满右侧",
+    "timeline": "横轴：下层朝代色带，上层世纪刻度；长时段高亮区间，城市个案高亮事件点"
   },
   "palette": {
     "branches": {
@@ -21709,5 +21717,116 @@
       "cityStroke": "#3D4F56",
       "cityFill": "rgba(91,124,138,0.18)"
     }
+  },
+  "timeline": {
+    "yearStart": -800,
+    "yearEnd": 2026,
+    "ticks": [
+      {
+        "year": -500,
+        "label": "前5世纪"
+      },
+      {
+        "year": 0,
+        "label": "公元"
+      },
+      {
+        "year": 500,
+        "label": "500"
+      },
+      {
+        "year": 1000,
+        "label": "1000"
+      },
+      {
+        "year": 1500,
+        "label": "1500"
+      },
+      {
+        "year": 2000,
+        "label": "今"
+      }
+    ],
+    "dynasties": [
+      {
+        "id": "chunqiu-zhanguo",
+        "label": "春秋战国",
+        "yearStart": -770,
+        "yearEnd": -221
+      },
+      {
+        "id": "qin",
+        "label": "秦",
+        "yearStart": -221,
+        "yearEnd": -206
+      },
+      {
+        "id": "han",
+        "label": "汉",
+        "yearStart": -206,
+        "yearEnd": 220
+      },
+      {
+        "id": "sanguo-jin",
+        "label": "魏晋",
+        "yearStart": 220,
+        "yearEnd": 420
+      },
+      {
+        "id": "nanbeichao",
+        "label": "南北朝",
+        "yearStart": 420,
+        "yearEnd": 589
+      },
+      {
+        "id": "sui",
+        "label": "隋",
+        "yearStart": 581,
+        "yearEnd": 618
+      },
+      {
+        "id": "tang",
+        "label": "唐",
+        "yearStart": 618,
+        "yearEnd": 907
+      },
+      {
+        "id": "wudai",
+        "label": "五代",
+        "yearStart": 907,
+        "yearEnd": 960
+      },
+      {
+        "id": "song",
+        "label": "宋",
+        "yearStart": 960,
+        "yearEnd": 1279
+      },
+      {
+        "id": "yuan",
+        "label": "元",
+        "yearStart": 1271,
+        "yearEnd": 1368
+      },
+      {
+        "id": "ming",
+        "label": "明",
+        "yearStart": 1368,
+        "yearEnd": 1644
+      },
+      {
+        "id": "qing",
+        "label": "清",
+        "yearStart": 1644,
+        "yearEnd": 1911
+      },
+      {
+        "id": "modern",
+        "label": "近现代",
+        "yearStart": 1912,
+        "yearEnd": 2026
+      }
+    ],
+    "note": "朝代起讫为示意标注，便于横轴阅读，非精细年表"
   }
 }

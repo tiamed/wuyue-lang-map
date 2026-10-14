@@ -11,7 +11,7 @@
   <header class="top">
     <div>
       <h1>吴越地区语言变迁</h1>
-      <p class="sub">MapLibre · 示意行政区聚合，非精确同言线 · 数据 v0.6.0 · 今界示意 · 江南风</p>
+      <p class="sub">MapLibre · 示意行政区聚合，非精确同言线 · 数据 v0.6.1 · 今界示意 · 江南风</p>
     </div>
     <nav class="layers" id="layerTabs">
       <button type="button" data-layer="era">长时段</button>
@@ -63,6 +63,16 @@
     <section class="map-wrap">
       <div id="map" aria-label="吴越语言地图"></div>
       <div id="legend" class="legend"></div>
+      <div id="timeAxis" class="time-axis hidden" aria-label="时间尺">
+        <div class="time-axis-inner">
+          <div id="timeAxisDynasties" class="time-axis-dynasties"></div>
+          <div id="timeAxisRanges" class="time-axis-ranges"></div>
+          <div class="time-axis-rail"></div>
+          <div id="timeAxisTicks" class="time-axis-ticks"></div>
+          <div id="timeAxisDots" class="time-axis-dots"></div>
+          <div id="timeAxisNeedle" class="time-axis-needle hidden"></div>
+        </div>
+      </div>
     </section>
   </main>
   <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>

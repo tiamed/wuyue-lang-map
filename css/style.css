@@ -81,7 +81,7 @@ label { display: block; color: var(--muted); font-size: 0.8rem; margin-bottom: 6
 }
 .credit { margin-top: 18px; font-size: 0.72rem; color: var(--muted); opacity: 0.85; }
 .legend {
-  position: absolute; left: 12px; bottom: 12px; z-index: 2;
+  position: absolute; left: 12px; bottom: 72px; z-index: 2;
   background: rgba(250,246,239,.94); border: 1px solid var(--line);
   border-radius: 10px; padding: 8px 10px; font-size: 0.75rem; color: var(--muted);
   max-width: 260px; pointer-events: none;
@@ -218,4 +218,170 @@ label { display: block; color: var(--muted); font-size: 0.8rem; margin-bottom: 6
   color: var(--accent, #8B3A3A);
   padding: 2px 7px;
   box-shadow: 0 1px 3px rgba(44, 42, 40, 0.12);
+}
+
+.time-axis {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 8px;
+  z-index: 3;
+  pointer-events: none;
+}
+.time-axis-inner {
+  position: relative;
+  height: 56px;
+  padding: 4px 8px 16px;
+  background: rgba(250, 246, 239, 0.94);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  pointer-events: auto;
+}
+.time-axis-dynasties {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  top: 6px;
+  height: 12px;
+  display: block;
+}
+.time-axis-dynasty {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  border-radius: 3px;
+  opacity: 0.85;
+  overflow: hidden;
+  box-sizing: border-box;
+  border-right: 1px solid rgba(250, 246, 239, 0.65);
+}
+.time-axis-dynasty span {
+  display: block;
+  font-size: 0.58rem;
+  line-height: 12px;
+  text-align: center;
+  color: #3A342C;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: clip;
+  padding: 0 1px;
+  pointer-events: none;
+}
+.time-axis-rail {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  top: 24px;
+  height: 2px;
+  background: #D8CDBE;
+  border-radius: 999px;
+}
+.time-axis-ranges {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  top: 20px;
+  height: 10px;
+}
+.time-axis-range {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  border-radius: 4px;
+  background: rgba(139, 58, 58, 0.22);
+  border: 1px solid rgba(139, 58, 58, 0.35);
+  cursor: pointer;
+  box-sizing: border-box;
+}
+.time-axis-range:hover { background: rgba(139, 58, 58, 0.35); }
+.time-axis-range.active {
+  background: rgba(139, 58, 58, 0.62);
+  border-color: var(--accent);
+  height: 12px;
+  top: -1px;
+  z-index: 1;
+}
+.time-axis-ticks {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  top: 0;
+  bottom: 0;
+  pointer-events: none;
+}
+.time-axis-tick {
+  position: absolute;
+  top: 22px;
+  width: 0;
+  transform: translateX(-50%);
+}
+.time-axis-tick::before {
+  content: "";
+  display: block;
+  width: 1px;
+  height: 6px;
+  margin: 0 auto;
+  background: #B7A996;
+}
+.time-axis-tick span {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.65rem;
+  color: var(--muted);
+  white-space: nowrap;
+  transform: translateX(-50%);
+  margin-left: 50%;
+}
+.time-axis-dots {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  top: 18px;
+  height: 16px;
+}
+.time-axis-dot {
+  position: absolute;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  margin-left: -5px;
+  margin-top: -5px;
+  border-radius: 50%;
+  background: #C8BBA8;
+  border: 2px solid #FFFaf3;
+  cursor: pointer;
+  box-shadow: 0 0 0 1px rgba(44, 42, 40, 0.08);
+}
+.time-axis-dot:hover { background: var(--accent); }
+.time-axis-dot.active {
+  background: var(--accent);
+  width: 12px;
+  height: 12px;
+  margin-left: -6px;
+  margin-top: -6px;
+  z-index: 2;
+}
+.time-axis-needle {
+  position: absolute;
+  top: 14px;
+  width: 2px;
+  height: 22px;
+  margin-left: -1px;
+  background: var(--accent);
+  border-radius: 1px;
+  box-shadow: 0 0 0 2px rgba(243, 237, 226, 0.85);
+  transition: left 0.35s ease;
+  pointer-events: none;
+  z-index: 3;
+}
+.time-axis-needle::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -3px;
+  width: 7px;
+  height: 7px;
+  margin-left: -3.5px;
+  border-radius: 50%;
+  background: var(--accent);
 }
