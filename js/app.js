@@ -37,6 +37,7 @@ const eventList = document.getElementById("eventList");
 const playBtn = document.getElementById("playBtn");
 const playProgressEl = document.getElementById("playProgress");
 const cityPlayDock = document.getElementById("cityPlayDock");
+const strataBarEl = document.getElementById("strataBar");
 const followMigrationEl = document.getElementById("followMigration");
 const showSubBranchesEl = document.getElementById("showSubBranches");
 const storyKicker = document.getElementById("storyKicker");
@@ -1290,17 +1291,24 @@ function renderCityView(opts = {}) {
   const migLine =
     bundle.showArrow && (ev.mapLabel || (bundle.fromName + " → " + bundle.toName));
   const attr = cityAttrTag(selectedCity);
+  const sid = ev && ev.stratumId;
+  const stratum = ((selectedCity.strata || []).find((s) => s.id === sid)) || null;
+  const stratumBlock = stratum
+    ? `<strong>层次 · ${stratum.title}</strong><div style="margin-top:4px">${stratum.body || stratumTypeLabel(sid)}</div>`
+    : "";
   const blurbBlock = selectedCity.blurb
     ? `<strong>概览</strong><div style="margin-top:4px">${selectedCity.blurb}</div>`
     : "";
   const islandExtra = selectedCity.islandNote
     ? `<strong>${attr || "特记"}</strong><div style="margin-top:4px">${selectedCity.islandNote}</div>`
     : "";
-  const extras = [blurbBlock, islandExtra].filter(Boolean).join('<div style="height:8px"></div>');
+  const extras = [stratumBlock, blurbBlock, islandExtra].filter(Boolean).join('<div style="height:8px"></div>');
   setStory({
     kicker: "城市个案 · " + selectedCity.name + (attr ? " · " + attr : ""),
     title: ev ? ev.title : selectedCity.name,
-    year: ev ? `${yearText(ev.year)} · ${ev.era || ""}` : "",
+    year: ev
+      ? `${yearText(ev.year)} · ${ev.era || ""}${stratum ? " · " + stratum.title : ""}`
+      : "",
     body: ev
       ? `${migLine ? "迁徙：" + migLine + "\n\n" : ""}${ev.body}`
       : (selectedCity.blurb || ""),
@@ -1309,17 +1317,22 @@ function renderCityView(opts = {}) {
   setMapInfo({
     kicker: "城市个案",
     title: selectedCity.name + (attr ? " · " + attr : ""),
-    sub: ev ? `${yearText(ev.year)} · ${ev.title}` : (selectedCity.shortTip || ""),
+    sub: ev
+      ? `${yearText(ev.year)} · ${ev.title}${stratum ? " · " + stratum.title : ""}`
+      : (selectedCity.shortTip || ""),
     onClick: () => {
-      // refresh left panel focus without scrolling chips
       syncCityPanel();
     },
   });
 
+  const strataLegend = (selectedCity.strata || [])
+    .map((s) => `<div class="row"><i style="background:${stratumColor(s.id)}"></i>${s.title}</div>`)
+    .join("");
   renderLegend(
     `<div class="row"><i style="background:#C4B6A4"></i>中国省界（今界示意）</div>
      ${bundle.showArrow ? `<div class="row"><i style="background:${ui.accent}"></i>${migLine}</div>` : `<div class="row"><i style="background:${ui.mutedInk}"></i>本地演变（无迁徙弧）</div>`}
-     <div class="row"><i style="background:${ui.cityStroke}"></i>${selectedCity.name} 轮廓</div>`
+     <div class="row"><i style="background:${ui.cityStroke}"></i>${selectedCity.name} 轮廓</div>` +
+      (strataLegend ? `<div class="row" style="margin-top:4px;opacity:.85">层次（底→顶）</div>${strataLegend}` : "")
   );
   renderTimeAxisCity();
   const camera = opts.camera || "none";
@@ -1330,6 +1343,69 @@ function renderCityView(opts = {}) {
     fitMigration(bundle.bounds, bundle.to, bundle.from);
   }
   // default: no camera move when switching city/event
+}
+
+
+function stratumColor(id) {
+  const t = (data.stratumTypes || []).find((x) => x.id === id);
+  return (t && t.color) || "#8B8B8B";
+}
+
+function stratumTypeLabel(id) {
+  const t = (data.stratumTypes || []).find((x) => x.id === id);
+  return (t && t.label) || id || "";
+}
+
+function activeStratumId() {
+  const ev = selectedCity && selectedCity.events && selectedCity.events[selectedEventIdx];
+  return (ev && ev.stratumId) || null;
+}
+
+function renderStrataBar() {
+  if (!strataBarEl) return;
+  strataBarEl.innerHTML = "";
+  const strata = (selectedCity && selectedCity.strata) || [];
+  if (!strata.length) {
+    strataBarEl.innerHTML = '<span class="meta" style="font-size:.75rem">本城暂无层次数据</span>';
+    return;
+  }
+  const active = activeStratumId();
+  strata.forEach((s) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "strata-chip" + (active === s.id ? " active" : active ? " dim" : "");
+    btn.dataset.id = s.id;
+    btn.setAttribute("role", "listitem");
+    btn.title = s.body || s.title;
+    btn.innerHTML = `<i style="background:${stratumColor(s.id)}"></i><span>${s.title}</span>`;
+    btn.addEventListener("click", () => {
+      stopCityPlay();
+      const idx = selectedCity.events.findIndex((ev) => ev.stratumId === s.id);
+      if (idx >= 0) {
+        selectedEventIdx = idx;
+        syncCityPanel();
+        renderCityView({ camera: followMigration ? "follow" : "none" });
+      } else {
+        setStory({
+          kicker: "层次 · " + selectedCity.name,
+          title: s.title,
+          year: s.approxYear != null ? yearText(s.approxYear) : "",
+          body: s.body || "",
+          extraHtml: `<strong>${stratumTypeLabel(s.id)}</strong>`,
+        });
+        [...strataBarEl.querySelectorAll(".strata-chip")].forEach((el) => {
+          el.classList.toggle("active", el.dataset.id === s.id);
+          el.classList.toggle("dim", el.dataset.id !== s.id);
+        });
+        setMapInfo({
+          kicker: "层次",
+          title: selectedCity.name + " · " + s.title,
+          sub: stratumTypeLabel(s.id),
+        });
+      }
+    });
+    strataBarEl.appendChild(btn);
+  });
 }
 
 function syncCityPanel() {
@@ -1354,6 +1430,7 @@ function syncCityPanel() {
     eventList.appendChild(li);
   });
   updatePlayChrome();
+  renderStrataBar();
 }
 
 function pickCity(id) {
@@ -1437,10 +1514,12 @@ function renderEraView() {
     extraHtml: dist,
   });
   const distOne = (era.distribution || "").split(/[。；;]/)[0] || "";
+  const focusLabels = (era.stratumFocus || []).map(stratumTypeLabel).filter(Boolean);
   setMapInfo({
     kicker: "长时段",
     title: era.label + (era.dynastyLabel ? " · " + era.dynastyLabel : ""),
-    sub: distOne || shortTip({ summary: era.summary || era.background || "" }),
+    sub: (focusLabels.length ? "层次：" + focusLabels.join(" · ") + " · " : "") +
+      (distOne || shortTip({ summary: era.summary || era.background || "" })),
     onClick: () => setEra(eraIdx),
   });
 

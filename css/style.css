@@ -611,3 +611,53 @@ label { display: block; color: var(--muted); font-size: 0.8rem; margin-bottom: 6
 .map-label.island-label.emph {
   border-width: 1.5px;
 }
+
+.strata-wrap {
+  margin-top: 8px;
+}
+.strata-label {
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.strata-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.strata-chip {
+  border: 1px solid var(--line);
+  background: #FFFaf3;
+  border-radius: 999px;
+  padding: 3px 8px 3px 6px;
+  font: inherit;
+  font-size: 0.72rem;
+  color: var(--ink);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  line-height: 1.2;
+  max-width: 100%;
+}
+.strata-chip i {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-block;
+  border: 1px solid rgba(44,42,40,.12);
+}
+.strata-chip:hover {
+  border-color: var(--accent);
+}
+.strata-chip.active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px rgba(139,58,58,.22);
+  background: #FFF6EC;
+  font-weight: 650;
+}
+.strata-chip.dim {
+  opacity: 0.45;
+}

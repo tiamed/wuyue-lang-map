@@ -11,7 +11,7 @@
   <header class="top">
     <div>
       <h1>吴越地区语言变迁</h1>
-      <p class="sub">MapLibre · 示意行政区聚合，非精确同言线 · 数据 v0.7.3 · 今界示意 · 江南风</p>
+      <p class="sub">MapLibre · 示意行政区聚合，非精确同言线 · 数据 v0.8.0 · 今界示意 · 江南风</p>
     </div>
     <nav class="layers" id="layerTabs">
       <button type="button" data-layer="era">长时段</button>
@@ -36,6 +36,10 @@
           <label class="follow-toggle"><input type="checkbox" id="followMigration" /> 跟随迁徙</label>
           <span id="cityMeta" class="meta"></span>
         </div>
+        <div class="strata-wrap">
+          <div class="strata-label">层次（底→顶）</div>
+          <div id="strataBar" class="strata-bar" role="list"></div>
+        </div>
       </div>
 
       <div id="eraControls" class="layer-pane hidden">
@@ -58,7 +62,7 @@
       </div>
 
       <div id="cityControls" class="layer-pane hidden">
-        <p class="hint">点短标签切换城市，停在该城第 1 事；要讲述再点「播放」。说明在故事区与地图信息条更新。</p>
+        <p class="hint">点短标签切换城市；层次色卡从底到顶，点事件高亮对应层。要讲述再点「播放」。</p>
         <div id="cityChips" class="city-chips"></div>
         <ol id="eventList" class="events"></ol>
         <p class="hint">默认固定视野不缩放；勾选「跟随迁徙」只平移到中点（zoom 锁定），不缩放。</p>
