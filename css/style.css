@@ -124,8 +124,80 @@ label { display: block; color: var(--muted); font-size: 0.8rem; margin-bottom: 6
 }
 .legend .row { display: flex; align-items: center; gap: 8px; margin: 3px 0; }
 .legend i { width: 12px; height: 12px; border-radius: 2px; display: inline-block; flex-shrink: 0; }
-.maplibregl-ctrl-attrib { font-size: 10px !important; }
 .maplibregl-ctrl-logo { display: none !important; }
+
+/* Jiangnan: map zoom + scrollbars */
+.maplibregl-ctrl-group {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+}
+.maplibregl-ctrl-group:not(:empty) {
+  box-shadow: none !important;
+}
+.maplibregl-ctrl-group button {
+  width: 32px !important;
+  height: 32px !important;
+  margin: 0 0 6px !important;
+  background: var(--bg) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 999px !important;
+  box-shadow: 0 1px 3px rgba(44, 42, 40, 0.08) !important;
+}
+.maplibregl-ctrl-group button + button {
+  border-top: 1px solid var(--line) !important;
+}
+.maplibregl-ctrl-group button:hover {
+  background: var(--panel) !important;
+  border-color: var(--accent) !important;
+}
+.maplibregl-ctrl-group button:focus:focus-visible {
+  box-shadow: 0 0 0 2px rgba(139, 58, 58, 0.25) !important;
+}
+.maplibregl-ctrl-group button .maplibregl-ctrl-icon {
+  background-size: 18px 18px !important;
+  opacity: 0.85;
+  /* ink-tint the default SVG via CSS filter toward charcoal */
+  filter: invert(14%) sepia(8%) saturate(500%) hue-rotate(350deg) brightness(90%);
+}
+.maplibregl-ctrl-group button:hover .maplibregl-ctrl-icon {
+  opacity: 1;
+  filter: invert(20%) sepia(40%) saturate(1200%) hue-rotate(330deg) brightness(85%);
+}
+.maplibregl-ctrl-attrib {
+  background: rgba(250, 246, 239, 0.9) !important;
+  color: var(--muted) !important;
+  border-radius: 8px !important;
+  padding: 2px 6px !important;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #C4B8A8 transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background: #C4B8A8;
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--ink);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+.panel::-webkit-scrollbar-thumb {
+  background: #C4B8A8;
+  border-radius: 999px;
+}
 
 .story {
   margin: 0 0 14px;
