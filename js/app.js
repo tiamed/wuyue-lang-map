@@ -29,6 +29,7 @@ root.style.setProperty("--accent", ui.accent);
 root.style.setProperty("--ink", ui.ink);
 
 const legendEl = document.getElementById("legend");
+const mapInfoEl = document.getElementById("mapInfo");
 const branchList = document.getElementById("branchList");
 const cityChips = document.getElementById("cityChips");
 const cityMeta = document.getElementById("cityMeta");
@@ -558,6 +559,30 @@ function renderLegend(html) {
   legendEl.innerHTML = html;
 }
 
+function cityAttrTag(c) {
+  if (!c) return "";
+  if (c.special === "dialectIsland") return "方言岛";
+  if (c.special === "exitedWu") return "已退出吴语";
+  const b = c.branch || "";
+  return b.split("·")[0] || b;
+}
+
+function setMapInfo({ kicker, title, sub, onClick }) {
+  if (!mapInfoEl) return;
+  if (!title) {
+    mapInfoEl.classList.remove("visible");
+    mapInfoEl.innerHTML = "";
+    mapInfoEl.onclick = null;
+    return;
+  }
+  mapInfoEl.classList.add("visible");
+  mapInfoEl.innerHTML =
+    (kicker ? `<div class="mi-kicker">${kicker}</div>` : "") +
+    `<div class="mi-title">${title}</div>` +
+    (sub ? `<div class="mi-sub">${sub}</div>` : "");
+  mapInfoEl.onclick = typeof onClick === "function" ? onClick : null;
+}
+
 function branchFillColorExpr() {
   const expr = ["match", ["get", "id"]];
   for (const f of data.branchGeoJSON.features) {
@@ -1054,6 +1079,31 @@ function renderBranchView() {
       <div class="row"><i style="background:#72B7B2;border:1px dashed #6E6A64"></i>嵌岛示意</div>`) +
       note
   );
+  if (selectedBranchId) {
+    const f = data.branchGeoJSON.features.find((x) => x.properties.id === selectedBranchId);
+    if (f) {
+      setMapInfo({
+        kicker: "六片分支",
+        title: f.properties.name,
+        sub: shortTip(f.properties),
+        onClick: () => {
+          setStory({
+            kicker: "六片分支",
+            title: f.properties.name,
+            year: "",
+            body: f.properties.summary || shortTip(f.properties),
+            extraHtml: subListHtml(selectedBranchId),
+          });
+        },
+      });
+    }
+  } else {
+    setMapInfo({
+      kicker: "六片分支",
+      title: showSubBranches ? "片内小片示意" : "吴语六片",
+      sub: "点地图或列表查看一片",
+    });
+  }
   fitWuYue(400);
 }
 
@@ -1066,6 +1116,11 @@ function selectBranch(id) {
       year: "",
       body: "单击单选填色，再点取消。勾选「看小片色块」叠县市示意面；虚线面为方言岛。",
     });
+    setMapInfo({
+      kicker: "六片分支",
+      title: showSubBranches ? "片内小片示意" : "吴语六片",
+      sub: "点地图或列表查看一片",
+    });
   } else {
     selectedBranchId = id;
     const f = data.branchGeoJSON.features.find((x) => x.properties.id === id);
@@ -1076,6 +1131,20 @@ function selectBranch(id) {
         year: "",
         body: f.properties.summary || shortTip(f.properties),
         extraHtml: subListHtml(id),
+      });
+      setMapInfo({
+        kicker: "六片分支",
+        title: f.properties.name,
+        sub: shortTip(f.properties),
+        onClick: () => {
+          setStory({
+            kicker: "六片分支",
+            title: f.properties.name,
+            year: "",
+            body: f.properties.summary || shortTip(f.properties),
+            extraHtml: subListHtml(id),
+          });
+        },
       });
     }
   }
@@ -1114,8 +1183,9 @@ function buildCityChips() {
           ? " special-exit"
           : "");
     btn.dataset.id = c.id;
-    const tip = (c.blurb || c.shortTip || "").slice(0, 28);
-    btn.innerHTML = `<span class="chip-name">${c.name}</span><span class="chip-branch">${c.branch}</span>${tip ? `<span class="chip-blurb">${tip}${ (c.blurb||c.shortTip||"").length>28 ? "…" : ""}</span>` : ""}`;
+    const tag = cityAttrTag(c);
+    btn.textContent = tag ? `${c.name} · ${tag}` : c.name;
+    btn.title = c.shortTip || c.blurb || c.name;
     btn.addEventListener("click", () => pickCity(c.id, true));
     cityChips.appendChild(btn);
   });
@@ -1157,17 +1227,31 @@ function renderCityView(opts = {}) {
 
   const migLine =
     bundle.showArrow && (ev.mapLabel || (bundle.fromName + " → " + bundle.toName));
-  const islandExtra = selectedCity.islandNote
-    ? `<strong>${selectedCity.special === "dialectIsland" ? "方言岛" : selectedCity.special === "exitedWu" ? "已退出吴语" : "特记"}</strong><div style="margin-top:4px">${selectedCity.islandNote}</div>`
+  const attr = cityAttrTag(selectedCity);
+  const blurbBlock = selectedCity.blurb
+    ? `<strong>概览</strong><div style="margin-top:4px">${selectedCity.blurb}</div>`
     : "";
+  const islandExtra = selectedCity.islandNote
+    ? `<strong>${attr || "特记"}</strong><div style="margin-top:4px">${selectedCity.islandNote}</div>`
+    : "";
+  const extras = [blurbBlock, islandExtra].filter(Boolean).join('<div style="height:8px"></div>');
   setStory({
-    kicker: "城市个案 · " + selectedCity.name,
+    kicker: "城市个案 · " + selectedCity.name + (attr ? " · " + attr : ""),
     title: ev ? ev.title : selectedCity.name,
     year: ev ? `${yearText(ev.year)} · ${ev.era || ""}` : "",
     body: ev
       ? `${migLine ? "迁徙：" + migLine + "\n\n" : ""}${ev.body}`
       : (selectedCity.blurb || ""),
-    extraHtml: islandExtra,
+    extraHtml: extras,
+  });
+  setMapInfo({
+    kicker: "城市个案",
+    title: selectedCity.name + (attr ? " · " + attr : ""),
+    sub: ev ? `${yearText(ev.year)} · ${ev.title}` : (selectedCity.shortTip || ""),
+    onClick: () => {
+      // refresh left panel focus without scrolling chips
+      syncCityPanel();
+    },
   });
 
   renderLegend(
@@ -1187,7 +1271,10 @@ function renderCityView(opts = {}) {
 }
 
 function syncCityPanel() {
-  cityMeta.textContent = `今属 ${selectedCity.branch}`;
+  const attr = cityAttrTag(selectedCity);
+  cityMeta.textContent = attr
+    ? `${attr} · ${selectedCity.branch}`
+    : `今属 ${selectedCity.branch}`;
   [...cityChips.children].forEach((btn) => {
     btn.classList.toggle("active", btn.dataset.id === selectedCity.id);
   });
@@ -1195,8 +1282,7 @@ function syncCityPanel() {
   selectedCity.events.forEach((ev, idx) => {
     const li = document.createElement("li");
     if (idx === selectedEventIdx) li.classList.add("active");
-    const b = migrationBundle(ev, selectedCity.name);
-    li.innerHTML = `<span class="year">${yearText(ev.year)} · ${ev.era || ""}</span><strong>${ev.title}</strong><span class="body" style="display:block;margin-top:4px;font-size:.78rem">${ev.mapLabel || (b.fromName + " → " + b.toName)}</span>`;
+    li.innerHTML = `<span class="year">${yearText(ev.year)}</span> · <strong>${ev.title}</strong>`;
     li.addEventListener("click", () => {
       stopCityPlay();
       selectedEventIdx = idx;
@@ -1280,6 +1366,13 @@ function renderEraView() {
     year: `${yearText(era.yearStart)} — ${yearText(era.yearEnd)}${era.dynastyLabel ? " · " + era.dynastyLabel : ""}`,
     body: era.background || era.summary,
     extraHtml: dist,
+  });
+  const distOne = (era.distribution || "").split(/[。；;]/)[0] || "";
+  setMapInfo({
+    kicker: "长时段",
+    title: era.label + (era.dynastyLabel ? " · " + era.dynastyLabel : ""),
+    sub: distOne || shortTip({ summary: era.summary || era.background || "" }),
+    onClick: () => setEra(eraIdx),
   });
 
   restoreBranchColors();

@@ -73,18 +73,54 @@ label { display: block; color: var(--muted); font-size: 0.8rem; margin-bottom: 6
 .list li:hover, .list li.active, .events li:hover, .events li.active {
   border-color: var(--accent); box-shadow: 0 0 0 1px rgba(139,58,58,.18);
 }
-.events .year { color: var(--accent2); font-size: 0.78rem; display: block; margin-bottom: 2px; }
-.events strong { display: block; margin-bottom: 4px; color: var(--ink); }
+.events li {
+  padding: 7px 10px;
+  margin-bottom: 6px;
+  font-size: 0.82rem;
+  line-height: 1.35;
+  color: var(--ink);
+}
+.events .year { color: var(--accent2); font-size: 0.78rem; }
+.events strong { display: inline; margin: 0; color: var(--ink); font-weight: 650; }
 #citySelect {
   width: 100%; padding: 8px 10px; border-radius: 8px;
   border: 1px solid var(--line); background: #FFFaf3; color: var(--text); font: inherit; margin-bottom: 10px;
 }
 .credit { margin-top: 18px; font-size: 0.72rem; color: var(--muted); opacity: 0.85; }
-.legend {
+.map-hud {
   position: absolute; left: 12px; bottom: 72px; z-index: 2;
+  max-width: min(300px, calc(100% - 24px));
+  display: flex; flex-direction: column; gap: 6px;
+  pointer-events: none;
+}
+.map-info {
+  display: none;
+  text-align: left;
+  border: 1px solid var(--line);
+  background: rgba(250,246,239,.96);
+  border-radius: 10px;
+  padding: 8px 10px;
+  font: inherit;
+  color: var(--ink);
+  cursor: pointer;
+  pointer-events: auto;
+  box-shadow: 0 1px 4px rgba(44,42,40,.06);
+}
+.map-info.visible { display: block; }
+.map-info .mi-kicker {
+  margin: 0 0 2px; font-size: 0.68rem; letter-spacing: 0.06em; color: var(--accent);
+}
+.map-info .mi-title {
+  margin: 0; font-size: 0.88rem; font-weight: 650; line-height: 1.35; color: var(--ink);
+}
+.map-info .mi-sub {
+  margin: 3px 0 0; font-size: 0.75rem; line-height: 1.4; color: var(--muted);
+}
+.legend {
+  position: static;
   background: rgba(250,246,239,.94); border: 1px solid var(--line);
   border-radius: 10px; padding: 8px 10px; font-size: 0.75rem; color: var(--muted);
-  max-width: 260px; pointer-events: none;
+  pointer-events: none;
 }
 .legend .row { display: flex; align-items: center; gap: 8px; margin: 3px 0; }
 .legend i { width: 12px; height: 12px; border-radius: 2px; display: inline-block; flex-shrink: 0; }
@@ -155,25 +191,31 @@ label { display: block; color: var(--muted); font-size: 0.8rem; margin-bottom: 6
 .city-chips {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  margin: 8px 0 12px;
+  gap: 6px;
+  margin: 8px 0 10px;
 }
 .city-chip {
   text-align: left;
   border: 1px solid var(--line);
   background: #FFFaf3;
-  border-radius: 12px;
-  padding: 10px 12px;
+  border-radius: 10px;
+  padding: 7px 10px;
   cursor: pointer;
   font: inherit;
   color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
 }
 .city-chip:hover, .city-chip.active {
   border-color: var(--accent);
   box-shadow: 0 0 0 1px rgba(139,58,58,.18);
 }
-.city-chip .chip-name { display: block; font-weight: 650; letter-spacing: 0.04em; }
-.city-chip .chip-branch { display: block; margin-top: 2px; font-size: 0.72rem; color: var(--muted); }
+.city-chip.special-island { color: var(--accent); }
+.city-chip.special-exit { color: var(--accent); }
 .map-label {
   background: rgba(250,246,239,.92);
   border: 1px solid #E0D6C8;
@@ -195,13 +237,6 @@ label { display: block; color: var(--muted); font-size: 0.8rem; margin-bottom: 6
 .map-label.branch-label {
   font-size: 11px;
   opacity: 0.92;
-}
-.city-chip .chip-blurb {
-  display: block;
-  margin-top: 6px;
-  font-size: 0.72rem;
-  line-height: 1.35;
-  color: var(--muted);
 }
 
 .follow-toggle {
@@ -446,14 +481,6 @@ label { display: block; color: var(--muted); font-size: 0.8rem; margin-bottom: 6
 .island-mark.soft .island-caption {
   color: var(--muted, #6E6A64);
   border-color: #C4B6A4;
-}
-.city-chip.special-island .chip-name::after {
-  content: " ★";
-  color: var(--accent);
-  font-size: 0.75em;
-}
-.city-chip.special-exit .chip-branch {
-  color: var(--accent);
 }
 .story-extra {
   margin: 8px 0 0;
