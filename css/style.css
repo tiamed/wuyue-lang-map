@@ -45,18 +45,97 @@ body {
 .layout {
   display: contents;
 }
+.sheet-handle { display: none; }
+
 @media (max-width: 860px) {
   body {
     grid-template-columns: 1fr;
-    grid-template-rows: auto minmax(200px, 38vh) minmax(0, 1fr);
-    overflow: auto;
+    grid-template-rows: auto minmax(0, 1fr);
+    height: 100dvh;
+    overflow: hidden;
   }
-  .top { grid-column: 1; grid-row: 1; }
+  .top {
+    grid-column: 1;
+    grid-row: 1;
+    padding: 8px 12px;
+    gap: 8px;
+  }
+  .top h1 { font-size: 1rem; }
+  .sub { display: none; }
+  .layers { width: 100%; justify-content: stretch; }
+  .layers button {
+    flex: 1;
+    text-align: center;
+    padding: 7px 8px;
+    font-size: 0.82rem;
+  }
+  .map-wrap {
+    grid-column: 1;
+    grid-row: 2;
+    min-height: 0;
+    height: 100%;
+  }
+  .map-hud {
+    bottom: calc(var(--sheet-peek, 140px) + 12px);
+    max-width: min(280px, calc(100% - 24px));
+  }
   .panel {
-    grid-column: 1; grid-row: 2;
-    border-right: none; border-bottom: 1px solid var(--line);
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    grid-column: auto;
+    grid-row: auto;
+    z-index: 20;
+    width: 100%;
+    max-height: min(78dvh, 640px);
+    border-right: none;
+    border-bottom: none;
+    border-top: 1px solid var(--line);
+    border-radius: 16px 16px 0 0;
+    box-shadow: 0 -10px 28px rgba(44, 42, 40, 0.14);
+    padding: 0 14px 16px;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    transform: translateY(calc(100% - var(--sheet-peek, 140px)));
+    transition: transform 0.28s ease;
+    touch-action: pan-y;
   }
-  .map-wrap { grid-column: 1; grid-row: 3; min-height: 360px; }
+  .panel.sheet-open {
+    transform: translateY(0);
+  }
+  .sheet-handle {
+    display: flex;
+    position: sticky;
+    top: 0;
+    z-index: 8;
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin: 0;
+    padding: 10px 8px 8px;
+    border: 0;
+    background: var(--panel);
+    color: var(--muted);
+    font: inherit;
+    font-size: 0.78rem;
+    cursor: pointer;
+  }
+  .sheet-grip {
+    width: 40px;
+    height: 4px;
+    border-radius: 999px;
+    background: #C4B8A8;
+    display: inline-block;
+  }
+  .panel-head {
+    max-height: min(42vh, 320px);
+  }
+  .panel-head:has(#cityPlayDock:not(.hidden)) {
+    max-height: min(40vh, 300px);
+  }
 }
 .panel {
   grid-column: 1;

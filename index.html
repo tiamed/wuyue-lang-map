@@ -11,7 +11,7 @@
   <header class="top">
     <div>
       <h1>吴越地区语言变迁</h1>
-      <p class="sub">MapLibre · 示意行政区聚合，非精确同言线 · 数据 v0.8.5 · 今界示意 · 江南风</p>
+      <p class="sub">MapLibre · 示意行政区聚合，非精确同言线 · 数据 v0.8.10 · 今界示意 · 江南风</p>
     </div>
     <nav class="layers" id="layerTabs">
       <button type="button" data-layer="era">长时段</button>
@@ -20,13 +20,17 @@
     </nav>
   </header>
   <main class="layout">
-    <aside class="panel">
+    <aside class="panel" id="sidePanel">
+      <button type="button" class="sheet-handle" id="sheetHandle" aria-expanded="false" aria-controls="sidePanel">
+        <span class="sheet-grip" aria-hidden="true"></span>
+        <span class="sheet-handle-label" id="sheetHandleLabel">展开说明</span>
+      </button>
       <div class="panel-head" id="panelHead">
         <article class="story" id="storyPanel" aria-live="polite">
           <p class="story-kicker" id="storyKicker">六片分支</p>
           <h2 class="story-title" id="storyTitle">点击地图或列表</h2>
           <p class="story-year" id="storyYear"></p>
-          <p class="story-body" id="storyBody">单击单选填色，再点取消。悬停只看片名与一句简介。</p>
+          <p class="story-body" id="storyBody">点选单选填色，再点取消。点地图或列表看片名与简介。</p>
           <div class="story-extra hidden" id="storyExtra"></div>
         </article>
 
@@ -58,7 +62,7 @@
       </div>
 
       <div id="branchControls" class="layer-pane">
-        <p class="hint">单击单选，再点取消。悬停看片/小片简介。</p>
+        <p class="hint">点选单选，再点取消。点地图或列表看片/小片简介。</p>
         <label class="follow-toggle" style="margin:6px 0 10px"><input type="checkbox" id="showSubBranches" /> 看小片色块</label>
         <ul id="branchList" class="list"></ul>
       </div>

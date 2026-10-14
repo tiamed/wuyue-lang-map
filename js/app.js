@@ -195,6 +195,31 @@ function shortTip(props) {
   return tip.length > 48 ? tip.slice(0, 48) + "…" : tip;
 }
 
+function isMobileLayout() {
+  return window.matchMedia("(max-width: 860px)").matches;
+}
+
+function syncSheetHandle() {
+  const panel = document.getElementById("sidePanel") || document.querySelector(".panel");
+  const handle = document.getElementById("sheetHandle");
+  const label = document.getElementById("sheetHandleLabel");
+  if (!panel || !handle) return;
+  const open = panel.classList.contains("sheet-open");
+  handle.setAttribute("aria-expanded", open ? "true" : "false");
+  if (label) label.textContent = open ? "收起说明" : "展开说明";
+}
+
+function setSheetOpen(open) {
+  const panel = document.getElementById("sidePanel") || document.querySelector(".panel");
+  if (!panel || !isMobileLayout()) return;
+  panel.classList.toggle("sheet-open", !!open);
+  syncSheetHandle();
+  // 抽屉开合后地图需重算尺寸
+  requestAnimationFrame(() => {
+    try { if (typeof map !== "undefined" && map) map.resize(); } catch (_) {}
+  });
+}
+
 function setStory({ kicker, title, year, body, extraHtml }) {
   storyKicker.textContent = kicker || "";
   storyTitle.textContent = title || "";
@@ -210,13 +235,16 @@ function setStory({ kicker, title, year, body, extraHtml }) {
   // 详情钉在侧栏顶：故事区内回到顶部；侧栏滚回粘性头，列表仍够得到
   const storyEl = document.getElementById("storyPanel");
   if (storyEl) storyEl.scrollTop = 0;
-  const panel = document.querySelector(".panel");
+  const panel = document.getElementById("sidePanel") || document.querySelector(".panel");
   if (panel && panelHead) {
     const headTop = panelHead.offsetTop;
     if (panel.scrollTop > headTop + 8) {
       panel.scrollTo({ top: headTop, behavior: "smooth" });
     }
   }
+  // 手机：有实质选中内容时自动展开底栏，方便读长文
+  const meaningful = !!(extraHtml || (title && title !== "点击地图或列表"));
+  if (isMobileLayout() && meaningful) setSheetOpen(true);
 }
 
 function clearMarkers(arr) {
@@ -1233,7 +1261,7 @@ function selectBranch(id) {
       kicker: "六片分支",
       title: "点击地图或列表",
       year: "",
-      body: "单击单选填色，再点取消。勾选「看小片色块」叠县市示意面；虚线面为方言岛。",
+      body: "点选单选填色，再点取消。勾选「看小片色块」叠县市示意面；虚线面为方言岛。",
     });
     setMapInfo({
       kicker: "六片分支",
@@ -1762,7 +1790,7 @@ function setMode(next) {
         kicker: "六片分支",
         title: "点击地图或列表",
         year: "",
-        body: "单击单选填色，再点取消。悬停只看片名与一句简介。",
+        body: "点选单选填色，再点取消。点地图或列表看片名与简介。",
       });
       [...branchList.children].forEach((li) => li.classList.remove("active"));
       renderBranchView();
@@ -1781,4 +1809,38 @@ function setMode(next) {
 document.getElementById("layerTabs").addEventListener("click", (e) => {
   const btn = e.target.closest("button[data-layer]");
   if (btn) setMode(btn.dataset.layer);
+});
+
+const sheetHandle = document.getElementById("sheetHandle");
+if (sheetHandle) {
+  sheetHandle.addEventListener("click", () => {
+    const panel = document.getElementById("sidePanel");
+    if (!panel || !isMobileLayout()) return;
+    setSheetOpen(!panel.classList.contains("sheet-open"));
+  });
+  // 简易拖动手势：上拉展开、下拉收起
+  let dragY0 = null;
+  const onStart = (y) => { dragY0 = y; };
+  const onEnd = (y) => {
+    if (dragY0 == null) return;
+    const dy = y - dragY0;
+    dragY0 = null;
+    if (Math.abs(dy) < 28) return;
+    setSheetOpen(dy < 0);
+  };
+  sheetHandle.addEventListener("touchstart", (e) => {
+    if (e.touches[0]) onStart(e.touches[0].clientY);
+  }, { passive: true });
+  sheetHandle.addEventListener("touchend", (e) => {
+    const t = e.changedTouches[0];
+    if (t) onEnd(t.clientY);
+  }, { passive: true });
+}
+window.addEventListener("resize", () => {
+  if (!isMobileLayout()) {
+    const panel = document.getElementById("sidePanel");
+    if (panel) panel.classList.remove("sheet-open");
+  }
+  syncSheetHandle();
+  try { if (typeof map !== "undefined" && map) map.resize(); } catch (_) {}
 });
