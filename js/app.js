@@ -63,6 +63,7 @@ let playTimer = null;
 let eraPlayTimer = null;
 let followMigration = false;
 let showSubBranches = false;
+let cityIntroPlayed = false;
 let cityFrameReady = false;
 const labelMarkers = [];
 const migMarkers = [];
@@ -1012,7 +1013,7 @@ map.on("load", () => {
   map.on("click", "cities-circle", (e) => {
     if (mode !== "city" && mode !== "era") return;
     const f = e.features && e.features[0];
-    if (f && mode === "city") pickCity(f.properties.id, true);
+    if (f && mode === "city") pickCity(f.properties.id);
   });
 
   fitWuYue();
@@ -1037,7 +1038,7 @@ function stopCityPlay() {
     playTimer = null;
   }
   playBtn.classList.remove("playing");
-  playBtn.textContent = "重新播放";
+  playBtn.textContent = "播放";
 }
 
 function stopEraPlay() {
@@ -1231,7 +1232,7 @@ function buildCityChips() {
     const tag = cityAttrTag(c);
     btn.textContent = tag ? `${c.name} · ${tag}` : c.name;
     btn.title = c.shortTip || c.blurb || c.name;
-    btn.addEventListener("click", () => pickCity(c.id, true));
+    btn.addEventListener("click", () => pickCity(c.id));
     cityChips.appendChild(btn);
   });
 }
@@ -1338,28 +1339,32 @@ function syncCityPanel() {
   });
 }
 
-function pickCity(id, autoplay) {
+function pickCity(id) {
   stopCityPlay();
   clearMigration();
   selectedCity = data.cities.find((c) => c.id === id) || selectedCity;
   selectedEventIdx = 0;
   syncCityPanel();
   renderCityView({ camera: "none" });
-  if (autoplay) startCityAutoplay();
 }
 
 function startCityAutoplay() {
   stopCityPlay();
-  const maxIdx = Math.min(2, selectedCity.events.length - 1);
+  const lastIdx = selectedCity.events.length - 1;
+  if (lastIdx < 0) return;
   selectedEventIdx = 0;
   syncCityPanel();
   renderCityView({ camera: "none" });
+  if (lastIdx === 0) return;
   playBtn.classList.add("playing");
   playBtn.textContent = "播放中…";
   let step = 0;
   playTimer = setInterval(() => {
     step += 1;
-    if (step > maxIdx) {
+    if (step > lastIdx) {
+      // 停在最后一件，不循环
+      selectedEventIdx = lastIdx;
+      syncCityPanel();
       stopCityPlay();
       return;
     }
@@ -1597,7 +1602,11 @@ function setMode(next) {
       cityFrameReady = false;
       syncCityPanel();
       renderCityView({ camera: "frame" });
-      startCityAutoplay();
+      // 仅第一次进城市个案自动讲述；之后换城/进层都改手动播放
+      if (!cityIntroPlayed) {
+        cityIntroPlayed = true;
+        startCityAutoplay();
+      }
     }
   };
   applyView();
