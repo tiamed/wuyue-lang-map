@@ -486,3 +486,15 @@ label { display: block; color: var(--muted); font-size: 0.8rem; margin-bottom: 6
   color: var(--ink);
   font-weight: 650;
 }
+
+.map-label.island-label {
+  font-size: 10px;
+  font-weight: 650;
+  color: var(--accent, #8B3A3A);
+  border: 1px dashed var(--accent, #8B3A3A);
+  background: rgba(250, 246, 239, 0.95);
+  padding: 1px 5px;
+}
+.map-label.island-label.emph {
+  border-width: 1.5px;
+}

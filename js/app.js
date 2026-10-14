@@ -256,23 +256,52 @@ function setSubBranchLayersVisible(on) {
   }
 }
 
-function makeIslandMark(island) {
-  const el = document.createElement("div");
-  el.className = "island-mark" + (island.emphasis ? "" : " soft");
-  el.innerHTML = `<div class="island-ring"></div><div class="island-star">${island.emphasis ? "★" : "•"}</div><div class="island-caption">${island.mapLabel || island.name}</div>`;
-  el.title = `${island.name} · ${island.kind || ""}
-${island.summary || ""}`;
-  return el;
+function islandFillColorExpr() {
+  const expr = ["match", ["get", "id"]];
+  const feats = (data.islandGeoJSON && data.islandGeoJSON.features) || [];
+  for (const f of feats) {
+    expr.push(f.properties.id, f.properties.fillColor || ui.accent);
+  }
+  expr.push(ui.accent);
+  return expr;
 }
 
-function showIslandMarks(filterFn) {
-  const islands = data.dialectIslands || [];
-  islands.forEach((island) => {
-    if (filterFn && !filterFn(island)) return;
-    const el = makeIslandMark(island);
+function setIslandLayersVisible(on) {
+  const vis = on ? "visible" : "none";
+  ["islands-fill", "islands-line"].forEach((id) => {
+    if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", vis);
+  });
+}
+
+function showIslandLabels() {
+  const feats = (data.islandGeoJSON && data.islandGeoJSON.features) || [];
+  // prefer dialectIslands lat/lng for label anchor when present
+  const byId = Object.fromEntries(
+    (data.dialectIslands || []).map((d) => [d.id, d])
+  );
+  feats.forEach((f) => {
+    const p = f.properties;
+    const anchor = byId[p.id];
+    let lnglat = null;
+    if (anchor && anchor.lng != null && anchor.lat != null) {
+      lnglat = [anchor.lng, anchor.lat];
+    } else {
+      // crude centroid from first ring
+      const ring = f.geometry.coordinates[0] || [];
+      if (!ring.length) return;
+      let sx = 0, sy = 0;
+      ring.forEach(([x, y]) => {
+        sx += x;
+        sy += y;
+      });
+      lnglat = [sx / ring.length, sy / ring.length];
+    }
+    const el = makeLabel(p.mapLabel || p.name, "island-label" + (p.emphasis ? " emph" : ""));
+    el.title = `${p.name} · ${p.kind || ""}
+${p.summary || ""}`;
     labelMarkers.push(
       new maplibregl.Marker({ element: el, anchor: "center" })
-        .setLngLat([island.lng, island.lat])
+        .setLngLat(lnglat)
         .addTo(map)
     );
   });
@@ -289,7 +318,7 @@ function subListHtml(parentId) {
     `<strong>片内小片</strong><ul class="sub-list">` +
     subs
       .map((s) => {
-        const star = s.id === "sub-hangzhou" ? " ★" : "";
+        const star = s.id === "sub-hangzhou" ? "（岛）" : "";
         return `<li><b>${s.name}${star}</b> — ${s.summary || s.area || ""}</li>`;
       })
       .join("") +
@@ -657,8 +686,8 @@ function showBranchLabels() {
         .addTo(map)
     );
   });
-  // 方言岛 / 特殊点：杭州星标虚线框；接触带弱标；扬州已退出不在六片层画
-  showIslandMarks((island) => island.id !== "note-yangzhou-exit");
+  // 方言岛：示意色块标签（扬州「已退出」不在六片层画面）
+  showIslandLabels();
 }
 
 function showMigEndLabels(bundle) {
@@ -745,12 +774,52 @@ map.on("load", () => {
     type: "circle",
     source: "sub-branches",
     filter: ["==", ["get", "id"], "sub-hangzhou"],
+    layout: { visibility: "none" },
     paint: {
       "circle-radius": 7,
       "circle-color": "rgba(139,58,58,0.15)",
       "circle-stroke-color": ui.accent,
       "circle-stroke-width": 2,
       "circle-stroke-opacity": 0.95,
+    },
+  });
+  map.addSource("islands", {
+    type: "geojson",
+    data: data.islandGeoJSON || { type: "FeatureCollection", features: [] },
+  });
+  map.addLayer({
+    id: "islands-fill",
+    type: "fill",
+    source: "islands",
+    paint: {
+      "fill-color": islandFillColorExpr(),
+      "fill-opacity": [
+        "case",
+        ["==", ["get", "emphasis"], true],
+        0.42,
+        0.28,
+      ],
+    },
+  });
+  map.addLayer({
+    id: "islands-line",
+    type: "line",
+    source: "islands",
+    paint: {
+      "line-color": [
+        "case",
+        ["==", ["get", "emphasis"], true],
+        ui.accent,
+        "#6E6A64",
+      ],
+      "line-width": [
+        "case",
+        ["==", ["get", "emphasis"], true],
+        2,
+        1.2,
+      ],
+      "line-dasharray": [1.8, 1.4],
+      "line-opacity": 0.9,
     },
   });
   map.addLayer({
@@ -850,6 +919,23 @@ map.on("load", () => {
     const f = e.features && e.features[0];
     if (f && f.properties.parent) selectBranch(f.properties.parent);
   });
+  map.on("mousemove", "islands-fill", (e) => {
+    if (mode !== "branch") return;
+    map.getCanvas().style.cursor = "pointer";
+    const f = e.features && e.features[0];
+    if (!f) return;
+    popup
+      .setLngLat(e.lngLat)
+      .setHTML(
+        `<strong>${f.properties.name}</strong><div style="margin-top:4px;font-size:12px;opacity:.85">${f.properties.summary || f.properties.kind || ""}</div>`
+      )
+      .addTo(map);
+  });
+  map.on("mouseleave", "islands-fill", () => {
+    if (mode !== "branch") return;
+    map.getCanvas().style.cursor = "";
+    popup.remove();
+  });
   map.on("click", "cities-circle", (e) => {
     if (mode !== "city" && mode !== "era") return;
     const f = e.features && e.features[0];
@@ -940,6 +1026,7 @@ function renderBranchView() {
   setChinaVisible(false);
   clearMigration();
   setSubBranchLayersVisible(true);
+  setIslandLayersVisible(true);
   map.setPaintProperty("cities-circle", "circle-opacity", 0);
   map.setFilter("city-outline-fill", ["==", ["get", "id"], ""]);
   map.setFilter("city-outline-line", ["==", ["get", "id"], ""]);
@@ -955,8 +1042,8 @@ function renderBranchView() {
           `<div class="row"><i style="background:${f.properties.fillColor}"></i>${f.properties.name}</div>`
       )
       .join("") +
-      `<div class="row"><i style="background:${ui.accent};border-radius:50%"></i>★ 方言岛（杭州 / 爵溪 / 金乡）</div>
-      <div class="row"><i style="background:#C8BBA8;border-radius:50%"></i>• 嵌岛 / 接触带</div>` +
+      `<div class="row"><i style="background:#8B3A3A;border:1px dashed ${ui.accent}"></i>方言岛色块（杭州 / 爵溪 / 金乡）</div>
+      <div class="row"><i style="background:#72B7B2;border:1px dashed #6E6A64"></i>嵌岛示意（沙塘湾等）</div>` +
       note
   );
   fitWuYue(400);
@@ -969,7 +1056,7 @@ function selectBranch(id) {
       kicker: "六片分支",
       title: "点击地图或列表",
       year: "",
-      body: "单击单选填色，再点取消。悬停看片/小片；★为方言岛（杭州、爵溪、金乡等）。",
+      body: "单击单选填色，再点取消。悬停看片/小片；虚线色块为方言岛示意范围。",
     });
   } else {
     selectedBranchId = id;
@@ -1025,6 +1112,7 @@ function buildCityChips() {
 
 function renderCityView(opts = {}) {
   setSubBranchLayersVisible(false);
+  setIslandLayersVisible(false);
   setChinaVisible(true);
   restoreBranchColors();
   map.setPaintProperty("branches-fill", "fill-opacity", 0.42);
@@ -1168,6 +1256,7 @@ function renderEraView() {
   const focusCities = [...(era.focusCityIds || [])];
 
   setSubBranchLayersVisible(false);
+  setIslandLayersVisible(false);
   setChinaVisible(false);
   clearMigration();
 
