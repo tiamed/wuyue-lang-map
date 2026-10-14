@@ -199,13 +199,25 @@ label { display: block; color: var(--muted); font-size: 0.8rem; margin-bottom: 6
   border-radius: 999px;
 }
 
+.panel-head {
+  position: sticky;
+  top: 0;
+  z-index: 6;
+  margin: 0 0 12px;
+  padding: 0 0 10px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--line);
+  max-height: min(46vh, 340px);
+  overflow-y: auto;
+  box-shadow: 0 6px 10px -8px rgba(44, 42, 40, 0.35);
+}
 .story {
-  margin: 0 0 14px;
-  padding: 12px 14px;
+  margin: 0;
+  padding: 10px 12px;
   background: #FFFaf3;
   border: 1px solid var(--line);
   border-radius: 12px;
-  min-height: 7.5rem;
+  min-height: 0;
 }
 .story-kicker { margin: 0 0 4px; font-size: 0.72rem; letter-spacing: 0.08em; color: var(--accent); }
 .story-title {
@@ -215,13 +227,11 @@ label { display: block; color: var(--muted); font-size: 0.8rem; margin-bottom: 6
 .story-year { margin: 0 0 8px; font-size: 0.8rem; color: var(--accent); min-height: 1.1em; }
 .story-body { margin: 0; font-size: 0.88rem; line-height: 1.55; color: var(--muted); }
 .city-play-dock {
-  position: sticky;
-  top: 0;
-  z-index: 6;
-  margin: 0 0 12px;
-  padding: 8px 0 10px;
-  background: var(--panel);
-  border-bottom: 1px solid var(--line);
+  position: static;
+  margin: 8px 0 0;
+  padding: 0;
+  background: transparent;
+  border-bottom: none;
 }
 .play-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .play-progress {

@@ -21,24 +21,26 @@
   </header>
   <main class="layout">
     <aside class="panel">
-      <article class="story" id="storyPanel" aria-live="polite">
-        <p class="story-kicker" id="storyKicker">六片分支</p>
-        <h2 class="story-title" id="storyTitle">点击地图或列表</h2>
-        <p class="story-year" id="storyYear"></p>
-        <p class="story-body" id="storyBody">单击单选填色，再点取消。悬停只看片名与一句简介。</p>
-        <div class="story-extra hidden" id="storyExtra"></div>
-      </article>
+      <div class="panel-head" id="panelHead">
+        <article class="story" id="storyPanel" aria-live="polite">
+          <p class="story-kicker" id="storyKicker">六片分支</p>
+          <h2 class="story-title" id="storyTitle">点击地图或列表</h2>
+          <p class="story-year" id="storyYear"></p>
+          <p class="story-body" id="storyBody">单击单选填色，再点取消。悬停只看片名与一句简介。</p>
+          <div class="story-extra hidden" id="storyExtra"></div>
+        </article>
 
-      <div id="cityPlayDock" class="city-play-dock hidden">
-        <div class="play-row">
-          <button type="button" id="playBtn" class="play-btn">播放</button>
-          <span id="playProgress" class="play-progress" aria-live="polite"></span>
-          <label class="follow-toggle"><input type="checkbox" id="followMigration" /> 跟随迁徙</label>
-          <span id="cityMeta" class="meta"></span>
-        </div>
-        <div class="strata-wrap">
-          <div class="strata-label">层次（底→顶）</div>
-          <div id="strataBar" class="strata-bar" role="list"></div>
+        <div id="cityPlayDock" class="city-play-dock hidden">
+          <div class="play-row">
+            <button type="button" id="playBtn" class="play-btn">播放</button>
+            <span id="playProgress" class="play-progress" aria-live="polite"></span>
+            <label class="follow-toggle"><input type="checkbox" id="followMigration" /> 跟随迁徙</label>
+            <span id="cityMeta" class="meta"></span>
+          </div>
+          <div class="strata-wrap">
+            <div class="strata-label">层次（底→顶）</div>
+            <div id="strataBar" class="strata-bar" role="list"></div>
+          </div>
         </div>
       </div>
 

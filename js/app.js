@@ -45,6 +45,7 @@ const storyTitle = document.getElementById("storyTitle");
 const storyYear = document.getElementById("storyYear");
 const storyBody = document.getElementById("storyBody");
 const storyExtra = document.getElementById("storyExtra");
+const panelHead = document.getElementById("panelHead");
 const eraTimeline = document.getElementById("eraTimeline");
 const eraProgressBar = document.getElementById("eraProgressBar");
 const eraPrev = document.getElementById("eraPrev");
@@ -200,6 +201,15 @@ function setStory({ kicker, title, year, body, extraHtml }) {
   } else {
     storyExtra.innerHTML = "";
     storyExtra.classList.add("hidden");
+  }
+  // 详情钉在侧栏顶：更新后滚回故事区，避免人还停在列表下方
+  if (panelHead) panelHead.scrollTop = 0;
+  const panel = document.querySelector(".panel");
+  if (panel && panelHead) {
+    const headTop = panelHead.offsetTop;
+    if (panel.scrollTop > headTop + 8) {
+      panel.scrollTo({ top: headTop, behavior: "smooth" });
+    }
   }
 }
 
