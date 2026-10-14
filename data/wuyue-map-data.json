@@ -1,7 +1,7 @@
 {
   "meta": {
-    "version": "0.7.0",
-    "note": "v0.7：时段 background/distribution；subBranches 小片；dialectIslands（杭州岛等）",
+    "version": "0.7.1",
+    "note": "v0.7.1：补爵溪/金乡/沙塘湾/蒲门/廿八都等方言岛与特殊点",
     "crs": "WGS84"
   },
   "eras": [
@@ -21785,7 +21785,8 @@
     "cityLayer": "不要用下拉做主切换：地图上常显 9 城圆点+地名；点地图或左侧城市卡片切换。当前城高亮轮廓；事件列表可点；迁徙箭头跟当前事件，底垫中国省界。",
     "eraLayer": "旁白优先 background；副文显示 distribution；横轴仍用 dynasty",
     "timeline": "横轴：下层朝代色带，上层世纪刻度；长时段高亮区间，城市个案高亮事件点",
-    "migration": "仅 showArrow=true 画弧；换城须清空旧 arrow 实例；勿叠两层不同色造成假渐变；零长度不要画"
+    "migration": "仅 showArrow=true 画弧；换城须清空旧 arrow 实例；勿叠两层不同色造成假渐变；零长度不要画",
+    "islands": "六片层用 ★ 标 emphasis 岛（杭州、爵溪、金乡等）；次要点用小圆点；点击显示 kind/period/summary"
   },
   "palette": {
     "branches": {
@@ -22047,9 +22048,85 @@
       "subBranch": "sub-hangzhou",
       "kind": "官话化吴语岛",
       "period": "南宋定都临安以降",
-      "summary": "宋室南渡带来汴洛官话，杭州城厢形成太湖片内特立的杭州小片。兼具官话与吴语特征，范围大致限于老城区及近郊，是吴语区著名方言岛。",
-      "mapLabel": "杭州方言岛",
-      "emphasis": true
+      "summary": "宋室南渡汴洛官话入城，形成太湖片杭州小片。兼具官话与吴语特质，范围大致限于老城厢及近郊，是吴语区最大、最著名的方言岛。",
+      "mapLabel": "杭州岛",
+      "emphasis": true,
+      "marker": "star"
+    },
+    {
+      "id": "island-juexi",
+      "name": "爵溪话（所里话）",
+      "lat": 29.48,
+      "lng": 121.95,
+      "parent": "branch-taihu",
+      "subBranch": "sub-yongjiang",
+      "kind": "军话官话岛（吴语化官话）",
+      "period": "明洪武设爵溪千户所以降",
+      "summary": "象山爵溪街道。明初驻军多来自北方，形成官话岛；长期受甬江吴语包围，研究多称为「吴语化的官话」。与杭州话、苍南金乡话有可比特征。对外常改说当地丹城话。使用人口约数千至近万。",
+      "mapLabel": "爵溪",
+      "emphasis": true,
+      "marker": "star",
+      "admin": "浙江宁波象山县爵溪街道"
+    },
+    {
+      "id": "island-jinxiang",
+      "name": "金乡话方言岛",
+      "lat": 27.43,
+      "lng": 120.58,
+      "parent": "branch-taihu",
+      "subBranch": null,
+      "kind": "北吴（太湖片）飞地岛",
+      "period": "明抗倭卫所驻军后裔",
+      "summary": "苍南金乡镇城区。明卫所驻军多为浙北籍，解甲留居后在闽语/蛮话/瓯语包围中保留太湖片特征，兼官话成分。是「南吴区里的北吴岛」。",
+      "mapLabel": "金乡",
+      "emphasis": true,
+      "marker": "star",
+      "admin": "浙江温州苍南县金乡镇"
+    },
+    {
+      "id": "island-shatangwan",
+      "name": "沙塘湾闽语岛",
+      "lat": 29.2,
+      "lng": 121.95,
+      "parent": "branch-taihu",
+      "subBranch": "sub-yongjiang",
+      "kind": "闽南话岛（嵌于吴语）",
+      "period": "移民形成（近代记述）",
+      "summary": "象山石浦镇沙塘湾村。吴语甬江小片区内的闽南话点；对外多改说石浦话。与爵溪同属象山境内「方言岛」并提。",
+      "mapLabel": "沙塘湾",
+      "emphasis": false,
+      "marker": "dot",
+      "admin": "浙江宁波象山县石浦镇沙塘湾"
+    },
+    {
+      "id": "island-pumen",
+      "name": "蒲门话",
+      "lat": 27.18,
+      "lng": 120.45,
+      "parent": "branch-oujiang",
+      "subBranch": "sub-oujiang-core",
+      "kind": "瓯江片特殊点 / 古戍所",
+      "period": "明清戍所传统",
+      "summary": "苍南南端浙闽界蒲门一带。同属南吴瓯江片但自有特色，与温州城区话不同；对外常兼闽南话。常与金乡并列为苍南特殊点。",
+      "mapLabel": "蒲门",
+      "emphasis": false,
+      "marker": "dot",
+      "admin": "浙江温州苍南县蒲门一带"
+    },
+    {
+      "id": "island-nianbadu",
+      "name": "廿八都正字",
+      "lat": 28.3,
+      "lng": 118.55,
+      "parent": "branch-shangli",
+      "subBranch": null,
+      "kind": "官话岛（正字）",
+      "period": "明清以降商路/戍卫传统",
+      "summary": "江山廿八都等地的「正字」类官话岛，处于吴语（上丽/金衢）与赣闽方言交界带，展示浙西多方言嵌套。",
+      "mapLabel": "廿八都",
+      "emphasis": false,
+      "marker": "dot",
+      "admin": "浙江衢州江山市廿八都"
     },
     {
       "id": "island-piling-contact",
@@ -22058,11 +22135,12 @@
       "lng": 119.95,
       "parent": "branch-taihu",
       "subBranch": "sub-piling",
-      "kind": "官话接触带",
+      "kind": "官话接触带（非典型岛）",
       "period": "宋元以降加强",
-      "summary": "毗陵小片北接江淮官话，人称代词等已偏官话型，虽仍属吴语，但是北缘接触带而非典型「岛」。",
+      "summary": "毗陵小片北接江淮官话，人称代词等偏官话型；仍属吴语，但是北缘接触带。",
       "mapLabel": "毗陵接触带",
-      "emphasis": false
+      "emphasis": false,
+      "marker": "dot"
     },
     {
       "id": "note-yangzhou-exit",
@@ -22072,10 +22150,11 @@
       "parent": null,
       "kind": "历史换血→江淮官话",
       "period": "建炎南渡为关键转折",
-      "summary": "今属江淮官话，不是吴语方言岛；而是吴语底层被官话替换后的「退出」样本，故放在城市个案而非六片填色。",
+      "summary": "今属江淮官话，不是吴语岛；是吴语底层被官话替换的「退出」样本，放在城市个案。",
       "mapLabel": "扬州（已非吴语）",
-      "emphasis": true
+      "emphasis": true,
+      "marker": "star"
     }
   ],
-  "partitionNote": "六片框架依《中国语言地图集》系统；太湖片小片同时标注常见「苏嘉湖/上海」新分法。杭州为强调的方言岛；扬州为已退出吴语的换血样本。示意标注，非村级同言线。"
+  "partitionNote": "六片+小片依语言地图集系统；方言岛分三类：①吴语区内官话/军话岛（杭州、爵溪等）；②非本片吴语飞地（金乡太湖片岛）；③异方言嵌岛（沙塘湾闽语等）。示意点位，非精确村落界。"
 }

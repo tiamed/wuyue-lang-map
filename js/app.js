@@ -12,7 +12,7 @@ const ui = (data.palette && data.palette.ui) || {
 };
 
 const BOUNDS = [
-  [116.65, 27.14],
+  [116.65, 26.95],
   [122.84, 32.71],
 ];
 // city-mode locked frame: Wu-Yue + a bit of inland China for migration context
@@ -955,7 +955,8 @@ function renderBranchView() {
           `<div class="row"><i style="background:${f.properties.fillColor}"></i>${f.properties.name}</div>`
       )
       .join("") +
-      `<div class="row"><i style="background:${ui.accent};border-radius:50%"></i>★ 杭州方言岛</div>` +
+      `<div class="row"><i style="background:${ui.accent};border-radius:50%"></i>★ 方言岛（杭州 / 爵溪 / 金乡）</div>
+      <div class="row"><i style="background:#C8BBA8;border-radius:50%"></i>• 嵌岛 / 接触带</div>` +
       note
   );
   fitWuYue(400);
@@ -968,7 +969,7 @@ function selectBranch(id) {
       kicker: "六片分支",
       title: "点击地图或列表",
       year: "",
-      body: "单击单选填色，再点取消。悬停看片/小片简介；杭州★为方言岛。",
+      body: "单击单选填色，再点取消。悬停看片/小片；★为方言岛（杭州、爵溪、金乡等）。",
     });
   } else {
     selectedBranchId = id;
