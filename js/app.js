@@ -1,220 +1,297 @@
-(async function () {
-  const res = await fetch("data/wuyue-map-data.json");
-  const data = await res.json();
+import * as Plot from "https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm";
+import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
 
-  const map = L.map("map", { zoomControl: true }).setView([30.6, 120.0], 7);
-  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    attribution: "&copy; OpenStreetMap contributors",
-    maxZoom: 19,
-  }).addTo(map);
+const data = await fetch("data/wuyue-map-data.json").then((r) => r.json());
 
-  const layers = { era: L.layerGroup().addTo(map), branch: L.layerGroup(), city: L.layerGroup() };
-  let arrows = L.layerGroup().addTo(map);
-  let mode = "era";
-  let selectedCity = data.cities[0];
-  let branchGeoLayer = null;
+const plotEl = document.getElementById("plot");
+const legendEl = document.getElementById("legend");
+const eraSlider = document.getElementById("eraSlider");
+const eraLabel = document.getElementById("eraLabel");
+const eraSummary = document.getElementById("eraSummary");
+const branchList = document.getElementById("branchList");
+const branchDetail = document.getElementById("branchDetail");
+const citySelect = document.getElementById("citySelect");
+const cityMeta = document.getElementById("cityMeta");
+const eventList = document.getElementById("eventList");
 
-  const eraSlider = document.getElementById("eraSlider");
-  const eraLabel = document.getElementById("eraLabel");
-  const eraSummary = document.getElementById("eraSummary");
-  const branchList = document.getElementById("branchList");
-  const citySelect = document.getElementById("citySelect");
-  const cityMeta = document.getElementById("cityMeta");
-  const eventList = document.getElementById("eventList");
+eraSlider.max = String(data.eras.length - 1);
+eraSlider.value = "4";
 
-  eraSlider.max = String(data.eras.length - 1);
+let mode = "branch";
+let selectedBranchId = null;
+let selectedCity = data.cities.find((c) => c.id === "yangzhou") || data.cities[0];
+let selectedEventIdx = 0;
 
-  function yearText(y) {
-    if (y < 0) return "前" + Math.abs(y) + "年";
-    return y + "年";
-  }
+function yearText(y) {
+  return y < 0 ? "前" + Math.abs(y) + "年" : y + "年";
+}
 
-  function clearArrows() {
-    arrows.clearLayers();
-  }
+function cityOutline(id) {
+  const feats = (data.cityOutlines && data.cityOutlines.features) || [];
+  return feats.find((f) => f.properties && f.properties.id === id) || null;
+}
 
-  function drawArrow(from, to) {
-    const latlngs = [L.latLng(from[0], from[1]), L.latLng(to[0], to[1])];
-    L.polyline(latlngs, { color: "#e8a54b", weight: 3, opacity: 0.9, dashArray: "6 6" }).addTo(arrows);
-    L.circleMarker(latlngs[0], { radius: 5, color: "#fff", fillColor: "#e8a54b", fillOpacity: 1, weight: 1 }).addTo(arrows);
-    L.circleMarker(latlngs[1], { radius: 7, color: "#fff", fillColor: "#3db8a0", fillOpacity: 1, weight: 1 }).addTo(arrows);
-  }
+function size() {
+  const wrap = plotEl.parentElement;
+  return {
+    width: Math.max(480, wrap.clientWidth - 8),
+    height: Math.max(420, wrap.clientHeight - 8),
+  };
+}
 
-  function showEra(i) {
-    const era = data.eras[i];
-    eraLabel.textContent = era.label;
-    eraSummary.textContent = yearText(era.yearStart) + " — " + yearText(era.yearEnd) + "\n\n" + era.summary;
-    layers.era.clearLayers();
-    const focus = era.yearStart >= 1127 ? [31.5, 119.8] : [30.8, 120.2];
-    const r = era.yearStart < 0 ? 220000 : era.yearStart < 600 ? 180000 : 150000;
-    L.circle(focus, {
-      radius: r,
-      color: "#34d399",
-      fillColor: "#34d399",
-      fillOpacity: 0.12,
-      weight: 1.5,
-    }).bindPopup("<strong>" + era.label + "</strong><br>" + era.summary).addTo(layers.era);
-  }
+function baseProjection(width, height) {
+  return {
+    type: "mercator",
+    domain: data.branchGeoJSON,
+    inset: 18,
+  };
+}
 
-  function styleBranch(feature) {
-    const c = (feature.properties && feature.properties.fillColor) || "#888";
-    return {
-      color: c,
-      weight: 1.5,
-      opacity: 0.95,
-      fillColor: c,
-      fillOpacity: 0.38,
-    };
-  }
+function renderLegend(items) {
+  legendEl.innerHTML = items
+    .map((it) => `<div class="row"><i style="background:${it.color}"></i>${it.label}</div>`)
+    .join("");
+}
 
-  function buildBranches() {
-    layers.branch.clearLayers();
-    branchList.innerHTML = "";
+function renderBranch() {
+  const { width, height } = size();
+  const marks = [
+    Plot.geo(data.branchGeoJSON, {
+      fill: (d) => d.properties.fillColor,
+      fillOpacity: (d) => (selectedBranchId && d.properties.id !== selectedBranchId ? 0.22 : 0.55),
+      stroke: (d) => (selectedBranchId === d.properties.id ? "#1c2430" : "#fff"),
+      strokeWidth: (d) => (selectedBranchId === d.properties.id ? 1.8 : 0.7),
+      title: (d) => `${d.properties.name}\n${d.properties.summary}`,
+      tip: true,
+      href: (d) => `#branch-${d.properties.id}`,
+    }),
+  ];
 
-    if (data.branchGeoJSON) {
-      branchGeoLayer = L.geoJSON(data.branchGeoJSON, {
-        style: styleBranch,
-        onEachFeature: function (feature, layer) {
-          const p = feature.properties || {};
-          const name = p.name || "";
-          const summary = p.summary || "";
-          layer.bindPopup("<strong>" + name + "</strong><br>" + summary +
-            "<br><small style='opacity:.7'>示意范围，非精确同言线</small>");
-          layer.on({
-            mouseover: function (e) {
-              e.target.setStyle({ weight: 3, fillOpacity: 0.55 });
-            },
-            mouseout: function (e) {
-              branchGeoLayer.resetStyle(e.target);
-            },
-          });
-        },
-      }).addTo(layers.branch);
-
-      data.branchGeoJSON.features.forEach(function (ft) {
-        const p = ft.properties || {};
-        const li = document.createElement("li");
-        const swatch = document.createElement("span");
-        swatch.style.cssText = "display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:8px;background:" + (p.fillColor || "#888");
-        li.appendChild(swatch);
-        li.appendChild(document.createTextNode(p.name || ""));
-        li.title = p.summary || "";
-        li.addEventListener("click", function () {
-          const layer = branchGeoLayer.getLayers().find(function (l) {
-            return l.feature && l.feature.properties && l.feature.properties.name === p.name;
-          });
-          if (layer) {
-            map.fitBounds(layer.getBounds(), { padding: [30, 30] });
-            layer.openPopup();
-          }
-        });
-        branchList.appendChild(li);
-      });
-    } else {
-      data.branches.forEach(function (b) {
-        const m = L.circleMarker([b.lat, b.lng], {
-          radius: 11,
-          color: "#c084fc",
-          fillColor: "#c084fc",
-          fillOpacity: 0.85,
-          weight: 2,
-        }).bindPopup("<strong>" + b.name + "</strong><br>" + b.summary);
-        m.addTo(layers.branch);
-        const li = document.createElement("li");
-        li.textContent = b.name;
-        li.addEventListener("click", function () {
-          map.setView([b.lat, b.lng], 8);
-          m.openPopup();
-        });
-        branchList.appendChild(li);
-      });
-    }
-  }
-
-  function renderCity(city) {
-    selectedCity = city;
-    cityMeta.innerHTML = "<strong>" + city.name + "</strong> · 今属 " + city.branch;
-    eventList.innerHTML = "";
-    clearArrows();
-    layers.city.clearLayers();
-
-    L.circleMarker([city.lat, city.lng], {
-      radius: 10,
-      color: "#5b8def",
-      fillColor: "#5b8def",
-      fillOpacity: 0.95,
-      weight: 2,
-    }).bindPopup("<strong>" + city.name + "</strong><br>今属：" + city.branch).addTo(layers.city);
-
-    city.events.forEach(function (ev, idx) {
-      const li = document.createElement("li");
-      li.innerHTML = "<span class=\"year\">" + yearText(ev.year) + " · " + ev.era +
-        "</span><strong>" + ev.title + "</strong><span class=\"body\">" + ev.body + "</span>";
-      li.addEventListener("click", function () {
-        Array.prototype.forEach.call(eventList.children, function (n) { n.classList.remove("active"); });
-        li.classList.add("active");
-        clearArrows();
-        drawArrow(ev.from, ev.to);
-        map.fitBounds(L.latLngBounds([ev.from, ev.to]).pad(0.35));
-        L.popup()
-          .setLatLng(ev.to)
-          .setContent("<strong>" + ev.title + "</strong><br><small>" + yearText(ev.year) + " · " + ev.era + "</small><br>" + ev.body)
-          .openOn(map);
-      });
-      eventList.appendChild(li);
-      if (idx === 0) li.click();
-    });
-  }
-
-  data.cities.forEach(function (c) {
-    const opt = document.createElement("option");
-    opt.value = c.id;
-    opt.textContent = c.name + "（" + c.branch + "）";
-    citySelect.appendChild(opt);
-  });
-  citySelect.addEventListener("change", function () {
-    const city = data.cities.find(function (c) { return c.id === citySelect.value; });
-    renderCity(city);
+  const chart = Plot.plot({
+    width,
+    height,
+    projection: baseProjection(width, height),
+    style: { background: "#f0ebe3" },
+    marks,
   });
 
-  buildBranches();
-  showEra(0);
-  renderCity(data.cities[0]);
+  plotEl.replaceChildren(chart);
+  renderLegend(
+    data.branchGeoJSON.features.map((f) => ({
+      color: f.properties.fillColor,
+      label: f.properties.name,
+    }))
+  );
 
-  eraSlider.addEventListener("input", function () { showEra(Number(eraSlider.value)); });
+  // click handling via SVG paths order matching features
+  const paths = chart.querySelectorAll("path");
+  const feats = data.branchGeoJSON.features;
+  paths.forEach((path, i) => {
+    if (!feats[i]) return;
+    path.style.cursor = "pointer";
+    path.addEventListener("click", () => selectBranch(feats[i].properties.id));
+  });
+}
 
-  function setMode(next) {
-    mode = next;
-    document.querySelectorAll("#layerTabs button").forEach(function (btn) {
-      btn.classList.toggle("active", btn.dataset.layer === next);
-    });
-    document.getElementById("eraControls").classList.toggle("hidden", next !== "era");
-    document.getElementById("branchControls").classList.toggle("hidden", next !== "branch");
-    document.getElementById("cityControls").classList.toggle("hidden", next !== "city");
-    Object.keys(layers).forEach(function (k) {
-      if (k === next) map.addLayer(layers[k]);
-      else map.removeLayer(layers[k]);
-    });
-    clearArrows();
-    if (next === "era") {
-      showEra(Number(eraSlider.value));
-      map.setView([30.6, 120.0], 7);
-    } else if (next === "branch") {
-      if (branchGeoLayer) map.fitBounds(branchGeoLayer.getBounds(), { padding: [24, 24] });
-      else map.setView([29.8, 120.2], 7);
-    } else {
-      renderCity(selectedCity);
-    }
+function selectBranch(id) {
+  selectedBranchId = id;
+  const f = data.branchGeoJSON.features.find((x) => x.properties.id === id);
+  [...branchList.children].forEach((li) => {
+    li.classList.toggle("active", li.dataset.id === id);
+  });
+  if (f) {
+    const admins = (f.properties.admins || []).join("、");
+    branchDetail.innerHTML = `<strong style="color:var(--text)">${f.properties.name}</strong><br>${f.properties.summary}<br><br><span style="font-size:.8rem">涵盖（示意）：${admins}</span><br><span style="font-size:.75rem;opacity:.75">${f.properties.note || ""}</span>`;
+  }
+  renderBranch();
+}
+
+function buildBranchList() {
+  branchList.innerHTML = "";
+  data.branchGeoJSON.features.forEach((f) => {
+    const p = f.properties;
+    const li = document.createElement("li");
+    li.dataset.id = p.id;
+    li.innerHTML = `<span style="display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:8px;background:${p.fillColor}"></span>${p.name}`;
+    li.addEventListener("click", () => selectBranch(p.id));
+    branchList.appendChild(li);
+  });
+}
+
+function renderCity() {
+  const { width, height } = size();
+  const outline = cityOutline(selectedCity.id);
+  const ev = selectedCity.events[selectedEventIdx] || selectedCity.events[0];
+  const marks = [];
+
+  // faint all branch context
+  marks.push(
+    Plot.geo(data.branchGeoJSON, {
+      fill: "#d8d2c6",
+      fillOpacity: 0.35,
+      stroke: "#fff",
+      strokeWidth: 0.5,
+    })
+  );
+
+  if (outline) {
+    marks.push(
+      Plot.geo(outline, {
+        fill: "#2a6f6a",
+        fillOpacity: 0.35,
+        stroke: "#2a6f6a",
+        strokeWidth: 2,
+      })
+    );
   }
 
-  document.getElementById("layerTabs").addEventListener("click", function (e) {
-    const btn = e.target.closest("button[data-layer]");
-    if (btn) setMode(btn.dataset.layer);
+  // other cities as small dots
+  marks.push(
+    Plot.dot(data.cities, {
+      x: "lng",
+      y: "lat",
+      r: (d) => (d.id === selectedCity.id ? 6 : 3.5),
+      fill: (d) => (d.id === selectedCity.id ? "#c45c26" : "#5c6b7a"),
+      stroke: "#fff",
+      strokeWidth: 1,
+      tip: true,
+      title: (d) => `${d.name}（${d.branch}）`,
+    })
+  );
+
+  if (ev && ev.from && ev.to) {
+    marks.push(
+      Plot.link([ev], {
+        x1: (d) => d.from[1],
+        y1: (d) => d.from[0],
+        x2: (d) => d.to[1],
+        y2: (d) => d.to[0],
+        stroke: "#c45c26",
+        strokeWidth: 2,
+        markerEnd: "arrow",
+        strokeOpacity: 0.9,
+      })
+    );
+  }
+
+  const chart = Plot.plot({
+    width,
+    height,
+    projection: baseProjection(width, height),
+    style: { background: "#f0ebe3" },
+    marks,
   });
+  plotEl.replaceChildren(chart);
+  legendEl.innerHTML = `<div class="row"><i style="background:#2a6f6a"></i>当前城市轮廓</div><div class="row"><i style="background:#c45c26"></i>迁徙方向（当前事件）</div>`;
 
-  // tweak branch pane hint
-  const hint = document.querySelector("#branchControls .hint");
-  if (hint) hint.textContent = "六片示意 choropleth（非精确同言线）。点击色块或列表查看简介。";
+  // click dots: Plot.dot order follows cities array in a g
+  const circles = chart.querySelectorAll("circle");
+  // may include arrow markers; match by counting from end or by title
+  circles.forEach((c) => {
+    c.style.cursor = "pointer";
+    c.addEventListener("click", () => {
+      // find nearest city by projected? fallback: cycle via select
+    });
+  });
+}
 
-  setMode("era");
-})();
+function renderEra() {
+  const i = Number(eraSlider.value);
+  const era = data.eras[i];
+  eraLabel.textContent = era.label;
+  eraSummary.textContent = `${yearText(era.yearStart)} — ${yearText(era.yearEnd)}\n\n${era.summary}`;
+
+  const { width, height } = size();
+  // fade branches; opacity by era progression
+  const t = i / Math.max(1, data.eras.length - 1);
+  const chart = Plot.plot({
+    width,
+    height,
+    projection: baseProjection(width, height),
+    style: { background: "#f0ebe3" },
+    marks: [
+      Plot.geo(data.branchGeoJSON, {
+        fill: (d) => d.properties.fillColor,
+        fillOpacity: 0.15 + t * 0.45,
+        stroke: "#fff",
+        strokeWidth: 0.8,
+        tip: true,
+        title: (d) => d.properties.name,
+      }),
+      Plot.text([era.label], {
+        frameAnchor: "top-left",
+        dx: 16,
+        dy: 20,
+        fontSize: 14,
+        fill: "#1c2430",
+        fontWeight: 650,
+      }),
+    ],
+  });
+  plotEl.replaceChildren(chart);
+  legendEl.innerHTML = `<div class="row">长时段示意：片区轮廓随时代逐渐清晰（非真实扩张动画）</div>`;
+}
+
+function syncCityPanel() {
+  cityMeta.innerHTML = `<strong>${selectedCity.name}</strong> · 今属 ${selectedCity.branch}`;
+  citySelect.value = selectedCity.id;
+  eventList.innerHTML = "";
+  selectedCity.events.forEach((ev, idx) => {
+    const li = document.createElement("li");
+    if (idx === selectedEventIdx) li.classList.add("active");
+    li.innerHTML = `<span class="year">${yearText(ev.year)} · ${ev.era}</span><strong>${ev.title}</strong><span class="body">${ev.body}</span>`;
+    li.addEventListener("click", () => {
+      selectedEventIdx = idx;
+      syncCityPanel();
+      renderCity();
+    });
+    eventList.appendChild(li);
+  });
+}
+
+data.cities.forEach((c) => {
+  const opt = document.createElement("option");
+  opt.value = c.id;
+  opt.textContent = `${c.name}（${c.branch}）`;
+  citySelect.appendChild(opt);
+});
+citySelect.addEventListener("change", () => {
+  selectedCity = data.cities.find((c) => c.id === citySelect.value);
+  selectedEventIdx = 0;
+  syncCityPanel();
+  renderCity();
+});
+
+eraSlider.addEventListener("input", () => {
+  if (mode === "era") renderEra();
+});
+
+function setMode(next) {
+  mode = next;
+  document.querySelectorAll("#layerTabs button").forEach((btn) => {
+    btn.classList.toggle("active", btn.dataset.layer === next);
+  });
+  document.getElementById("eraControls").classList.toggle("hidden", next !== "era");
+  document.getElementById("branchControls").classList.toggle("hidden", next !== "branch");
+  document.getElementById("cityControls").classList.toggle("hidden", next !== "city");
+  if (next === "era") renderEra();
+  else if (next === "branch") renderBranch();
+  else {
+    syncCityPanel();
+    renderCity();
+  }
+}
+
+document.getElementById("layerTabs").addEventListener("click", (e) => {
+  const btn = e.target.closest("button[data-layer]");
+  if (btn) setMode(btn.dataset.layer);
+});
+
+window.addEventListener("resize", () => {
+  if (mode === "era") renderEra();
+  else if (mode === "branch") renderBranch();
+  else renderCity();
+});
+
+buildBranchList();
+setMode("branch");
