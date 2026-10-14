@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>吴越语言变迁 · 地图</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="top">
+    <div>
+      <h1>吴越地区语言变迁</h1>
+      <p class="sub">长时段 · 六片分支 · 城市「换血」个案（数据 v0.2）</p>
+    </div>
+    <nav class="layers" id="layerTabs" aria-label="图层">
+      <button type="button" data-layer="era" class="active">长时段</button>
+      <button type="button" data-layer="branch">六片分支</button>
+      <button type="button" data-layer="city">城市个案</button>
+    </nav>
+  </header>
+
+  <main class="layout">
+    <aside class="panel" id="sidePanel">
+      <div id="eraControls" class="layer-pane">
+        <label class="slider-label" for="eraSlider">时间轴</label>
+        <input type="range" id="eraSlider" min="0" max="6" value="0" step="1" />
+        <div id="eraLabel" class="era-title"></div>
+        <p id="eraSummary" class="body"></p>
+      </div>
+      <div id="branchControls" class="layer-pane hidden">
+        <p class="hint">点击地图上的分支圆点，或右侧列表。</p>
+        <ul id="branchList" class="list"></ul>
+      </div>
+      <div id="cityControls" class="layer-pane hidden">
+        <label for="citySelect">代表城市</label>
+        <select id="citySelect"></select>
+        <div id="cityMeta" class="meta"></div>
+        <ol id="eventList" class="events"></ol>
+        <p class="hint">点击事件可在地图上显示迁徙箭头。</p>
+      </div>
+      <footer class="credit">静态页 · Leaflet · 不依赖后端</footer>
+    </aside>
+    <div id="map" role="application" aria-label="吴越语言地图"></div>
+  </main>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
