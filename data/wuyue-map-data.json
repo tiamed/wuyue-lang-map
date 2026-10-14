@@ -1,7 +1,7 @@
 {
   "meta": {
-    "version": "0.8.0",
-    "note": "v0.8：城市 strata 层次叠置；温州按维基补楚/江东/闽等层与事件",
+    "version": "0.8.1",
+    "note": "v0.8.1：各城事件补 stratumId；片区/方言岛/长时段对齐层次摘要",
     "crs": "WGS84"
   },
   "eras": [
@@ -23,7 +23,8 @@
       "distribution": "核心在太湖—钱塘江流域；越地偏南。华夏语尚未全面覆盖吴越故地。",
       "stratumFocus": [
         "baiyue"
-      ]
+      ],
+      "strataBlurb": "本段主色：百越/侗台底层。城个案可对照苏州、温州最底层色卡。"
     },
     {
       "id": "era-chu-qinhan",
@@ -46,7 +47,8 @@
       "stratumFocus": [
         "chu",
         "jiangdong"
-      ]
+      ],
+      "strataBlurb": "本段主色：楚语渗入 + 江东方言萌芽。温州、苏南事件可高亮 chu / jiangdong。"
     },
     {
       "id": "era-weijin",
@@ -73,7 +75,8 @@
         "jiangdong",
         "wuyu",
         "min"
-      ]
+      ],
+      "strataBlurb": "本段主色：江东→古吴语定型；南缘开始与古闽特征交叠。"
     },
     {
       "id": "era-tang-nbsong",
@@ -102,7 +105,8 @@
       "stratumFocus": [
         "wuyu",
         "zhongyuan"
-      ]
+      ],
+      "strataBlurb": "本段主色：吴语本层巩固；北缘（扬州）已见中原渗透苗头。"
     },
     {
       "id": "era-southern-song",
@@ -132,7 +136,8 @@
       "stratumFocus": [
         "zhongyuan",
         "wuyu"
-      ]
+      ],
+      "strataBlurb": "本段主色：中原移民层关键——杭州官话岛、扬州换血、温州文读。"
     },
     {
       "id": "era-mingqing",
@@ -166,7 +171,8 @@
       "stratumFocus": [
         "zhongyuan",
         "wuyu"
-      ]
+      ],
+      "strataBlurb": "本段主色：卫所军话岛、徽语接触、宣州磨损；吴语本层与官话层拉锯。"
     },
     {
       "id": "era-modern",
@@ -199,7 +205,8 @@
       "stratumFocus": [
         "tongyu",
         "wuyu"
-      ]
+      ],
+      "strataBlurb": "本段主色：通语/普通话强势叠层；上海、城关话变化最快。"
     }
   ],
   "branches": [
@@ -234,7 +241,8 @@
         "sub-linshao",
         "sub-yongjiang"
       ],
-      "background": "北部吴语主体，环太湖分布。内分毗陵、苏嘉湖、上海、杭州、临绍、甬江等小片（分区名在旧「苏沪嘉/苕溪」与新「苏嘉湖/上海」之间略有调整）。杭州小片为著名官话化方言岛。"
+      "background": "北部吴语主体，环太湖分布。内分毗陵、苏嘉湖、上海、杭州、临绍、甬江等小片（分区名在旧「苏沪嘉/苕溪」与新「苏嘉湖/上海」之间略有调整）。杭州小片为著名官话化方言岛。太湖片为北吴主体。层次上常见：百越底层 → 江东方言 → 北吴权威层；杭州城厢另叠南宋临安官话岛。近代上海小片偏新，苏嘉湖相对保守。",
+      "strataSummary": "越底·江东·北吴·（杭岛）官话叠层"
     },
     {
       "id": "branch-taizhou",
@@ -251,7 +259,8 @@
       "subBranchIds": [
         "sub-taizhou-core"
       ],
-      "background": "南吴北缘，语音相对近北吴；与瓯江片隔阂大。"
+      "background": "台州片处南吴北缘：江东吴语层为主，北可与北吴有限沟通，南与瓯江片隔阂大；近代城关叠通语层。",
+      "strataSummary": "江东·南吴过渡·近代通语"
     },
     {
       "id": "branch-oujiang",
@@ -287,7 +296,8 @@
       "subBranchIds": [
         "sub-jinqu-wu"
       ],
-      "background": "浙中金衢（含旧婺州及部分处衢点），片内分歧大。"
+      "background": "金衢片（婺州+处衢）为浙中南吴：江东层上分化加剧，钱塘上游受临安文读/「浙江官话」辐射，城关通语层明显。",
+      "strataSummary": "江东·婺处衢分化·杭州文读辐射"
     },
     {
       "id": "branch-shangli",
@@ -304,7 +314,8 @@
       "subBranchIds": [
         "sub-shangli-li"
       ],
-      "background": "浙南上丽（旧处衢调整），与邻片通话困难。"
+      "background": "上丽片偏山区南吴，处衢系统延续；外部通语叠层相对晚，内部点之间差异大。",
+      "strataSummary": "南吴山区·处衢系统·通语叠层"
     },
     {
       "id": "branch-xuanzhou",
@@ -327,7 +338,8 @@
         "sub-taigao",
         "sub-shiling"
       ],
-      "background": "西区吴语，散在皖南等地。内分铜泾、太高、石陵；与官话、徽语交错，萎缩最明显。"
+      "background": "宣州片西吴：吴语层上长期受江淮官话渗透，明清再叠徽语接触；铜泾/太高/石陵磨损速度不同。",
+      "strataSummary": "西吴·江淮官话渗透·徽语接触"
     }
   ],
   "cities": [
@@ -339,6 +351,23 @@
       "branch": "江淮官话",
       "layer": "city",
       "events": [
+        {
+          "year": -500,
+          "era": "吴越北缘",
+          "from": [
+            32.39,
+            119.42
+          ],
+          "to": [
+            32.39,
+            119.42
+          ],
+          "showArrow": false,
+          "title": "吴越底层北缘",
+          "mapLabel": "广陵",
+          "stratumId": "baiyue",
+          "body": "春秋属吴越语底层分布北缘；后世「换血」故事须从这一底层说起。"
+        },
         {
           "year": 311,
           "era": "永嘉之乱",
@@ -353,7 +382,25 @@
           "title": "北人南迁，中原雅言初渗",
           "body": "西晋末洛阳陷落，士民避乱南渡。中原雅言进入江淮，与当地吴语底层接触。江北扬州一带此时仍保留较强吴语色彩，但北方通语开始渗入音系与词汇。",
           "mapLabel": "洛阳→扬州",
-          "showArrow": true
+          "showArrow": true,
+          "stratumId": "zhongyuan"
+        },
+        {
+          "year": 605,
+          "era": "隋炀帝好吴语",
+          "from": [
+            32.06,
+            118.79
+          ],
+          "to": [
+            32.39,
+            119.42
+          ],
+          "showArrow": true,
+          "title": "隋唐仍盛吴语层",
+          "mapLabel": "建康→扬",
+          "stratumId": "wuyu",
+          "body": "隋炀帝「好为吴语」；文献显示官话化之前，吴语层在江淮长期主导。"
         },
         {
           "year": 755,
@@ -369,7 +416,8 @@
           "title": "再度南迁，扬州话急变",
           "body": "唐中期北方人口大规模避祸南下，扬州作为运河枢纽承接移民。方言急剧变化，逐步脱离吴语影响，向北方方言靠拢，为后来的江淮官话埋下伏笔。",
           "mapLabel": "长安一带→扬州",
-          "showArrow": true
+          "showArrow": true,
+          "stratumId": "zhongyuan"
         },
         {
           "year": 1091,
@@ -385,7 +433,8 @@
           "title": "苏轼仍闻「吴侬」底色",
           "body": "北宋元祐六年苏轼过扬州，词中有「语音犹自带吴侬」。说明迟至北宋，扬州话仍可听出吴语底色——官话化尚未完成。",
           "mapLabel": "扬州（仍带吴侬）",
-          "showArrow": false
+          "showArrow": false,
+          "stratumId": "wuyu"
         },
         {
           "year": 1127,
@@ -401,7 +450,8 @@
           "title": "关键转折：正式转向官话",
           "body": "宋高宗一度驻跸扬州，北方移民与中原官话大规模落户。学界多将此视为扬州方言脱离吴语体系、转向江淮官话的关键节点。此后江淮成为吴语与官话的交锋带。",
           "mapLabel": "汴京→扬州",
-          "showArrow": true
+          "showArrow": true,
+          "stratumId": "zhongyuan"
         },
         {
           "year": 1370,
@@ -417,7 +467,8 @@
           "title": "苏人北迁，吴语要素再叠加",
           "body": "明初江南（尤苏州一带）人口迁入淮扬，民间传说称「洪武赶散」。方言再次叠入吴语成分，形成南北特征交织；苏中不少词汇、说法仍可追到江南移民记忆。",
           "mapLabel": "苏州→扬州",
-          "showArrow": true
+          "showArrow": true,
+          "stratumId": "wuyu"
         },
         {
           "year": 1700,
@@ -433,7 +484,8 @@
           "title": "徽语层再渗入",
           "body": "扬州为两淮盐运中心，徽商聚居置业。徽语成分渗入本地话，与官话、残留吴语层并存，造就「不南不北、又南又北」的过渡面貌。今扬州话属江淮官话洪巢片，仍保留入声。",
           "mapLabel": "徽州→扬州",
-          "showArrow": true
+          "showArrow": true,
+          "stratumId": "chu"
         }
       ],
       "shortTip": "吴语底层→江淮官话的典型「换血」样本",
@@ -483,6 +535,40 @@
       "layer": "city",
       "events": [
         {
+          "year": -500,
+          "era": "先秦底层",
+          "from": [
+            30.25,
+            120.15
+          ],
+          "to": [
+            30.25,
+            120.15
+          ],
+          "showArrow": false,
+          "title": "钱塘吴越底层",
+          "mapLabel": "钱塘",
+          "stratumId": "baiyue",
+          "body": "钱塘江北上古吴越非汉语底层；后被汉语覆盖，遗址与地名仍可作底层提示。"
+        },
+        {
+          "year": 300,
+          "era": "六朝江东",
+          "from": [
+            31.3,
+            120.62
+          ],
+          "to": [
+            30.25,
+            120.15
+          ],
+          "showArrow": true,
+          "title": "北吴连续体中的钱塘口音",
+          "mapLabel": "苏→杭",
+          "stratumId": "jiangdong",
+          "body": "杭州本属北部吴语连续体，与苏嘉湖、临绍联系密切；南宋前并无「方言岛」一说。"
+        },
+        {
           "year": 1129,
           "era": "建炎南渡",
           "from": [
@@ -496,7 +582,8 @@
           "title": "汴洛官话入杭",
           "body": "高宗自建康如杭州，升州为临安。北方移民在兵火后的户口结构中占比极高，把汴洛一带宋代通语带入城内，形成「临安官话」层。",
           "mapLabel": "汴京→临安",
-          "showArrow": true
+          "showArrow": true,
+          "stratumId": "zhongyuan"
         },
         {
           "year": 1138,
@@ -512,7 +599,8 @@
           "title": "行在所：官话成为城内权威音",
           "body": "绍兴八年移跸临安，此后近150年杭州为南宋政治中心。官话在城厢占据权威地位，对土著吴语造成深层改写，尤其文读与部分词汇语法。",
           "mapLabel": "定都临安",
-          "showArrow": true
+          "showArrow": true,
+          "stratumId": "zhongyuan"
         },
         {
           "year": 1276,
@@ -528,7 +616,8 @@
           "title": "政治中心北移，层次仍在",
           "body": "元兵破临安后政治中心北移，但南宋官话影响已沉淀为杭州话独特层次。周边县市多属苏嘉湖、临绍，城内口音仍明显不同。",
           "mapLabel": "大都←→杭州",
-          "showArrow": true
+          "showArrow": true,
+          "stratumId": "zhongyuan"
         },
         {
           "year": 1987,
@@ -544,7 +633,8 @@
           "title": "太湖片杭州小片",
           "body": "今归吴语太湖片杭州小片，一市成片，特立于北吴之中。听感上常被外地吴语区认为「有点像北方话」，正是历史层累的结果。",
           "mapLabel": "杭州小片",
-          "showArrow": false
+          "showArrow": false,
+          "stratumId": "wuyu"
         }
       ],
       "shortTip": "方言岛：南宋官话层·杭州小片",
@@ -601,7 +691,8 @@
           "title": "吴语核心区奠基",
           "body": "吴国都于今苏州一带。后世所谓江东方言、吴语的地理核心长期在此；春秋文献中的「夷言」与后来汉语吴语不能简单等同，但地域连续性明确。",
           "mapLabel": "吴都",
-          "showArrow": false
+          "showArrow": false,
+          "stratumId": "baiyue"
         },
         {
           "year": 311,
@@ -617,7 +708,8 @@
           "title": "接受北方移民，核心仍稳",
           "body": "永嘉之乱后北人迁入江南，苏州—建康一线成为江东方言发育的重要舞台。苏州一带在吸收北方成分的同时，仍保持吴语主体特征。",
           "mapLabel": "中原→苏州",
-          "showArrow": true
+          "showArrow": true,
+          "stratumId": "wuyu"
         },
         {
           "year": 1370,
@@ -633,7 +725,8 @@
           "title": "人口外输淮扬",
           "body": "明初苏州等地人口迁往淮扬等地，成为苏中方言吴语印记的重要来源。阊门成为移民记忆中的地标，「上苏州」一类说法在苏中流传甚久。",
           "mapLabel": "苏州→淮扬",
-          "showArrow": true
+          "showArrow": true,
+          "stratumId": "wuyu"
         },
         {
           "year": 1928,
@@ -649,7 +742,8 @@
           "title": "赵元任调查中的北吴样本",
           "body": "赵元任《现代吴语的研究》等调查以苏沪杭嘉湖为核心样本区。苏州话长期被视为北吴「软语」的典型代表。",
           "mapLabel": "苏州（北吴样本）",
-          "showArrow": false
+          "showArrow": false,
+          "stratumId": "wuyu"
         }
       ],
       "shortTip": "北吴核心，相对稳定的参照点",
@@ -704,7 +798,8 @@
           "title": "从滨海县治到吴语东缘",
           "body": "上海县设立前后，土著话属北部吴语东缘，与松江、苏州一带可通。此时尚无后来「上海话」的都市面貌。",
           "mapLabel": "上海县",
-          "showArrow": false
+          "showArrow": false,
+          "stratumId": "jiangdong"
         },
         {
           "year": 1843,
@@ -720,7 +815,8 @@
           "title": "五方杂处，口音重组",
           "body": "开埠后宁波、苏南、江北及更远移民涌入租界与城区。土著松江系口音与外来成分剧烈碰撞，城市通用口语开始快速成型。",
           "mapLabel": "各地→上海",
-          "showArrow": true
+          "showArrow": true,
+          "stratumId": "zhongyuan"
         },
         {
           "year": 1930,
@@ -736,7 +832,8 @@
           "title": "上海话成为都市共通语",
           "body": "民国时期上海话在商埠、娱乐与大众传媒中扩张，对外来人口有强同化力，同时也大量吸收通语与外语借词。",
           "mapLabel": "上海话都市层",
-          "showArrow": false
+          "showArrow": false,
+          "stratumId": "tongyu"
         },
         {
           "year": 1990,
@@ -752,7 +849,8 @@
           "title": "普通话强势，乡音层累",
           "body": "普通话推广与外来人口使上海话使用空间收缩，但浊音等吴语特征仍在老派口音中可闻。今地图集或单立上海小片。",
           "mapLabel": "通语冲击",
-          "showArrow": false
+          "showArrow": false,
+          "stratumId": "tongyu"
         }
       ],
       "shortTip": "开埠后五方杂处，最快靠拢通语的吴语城",
@@ -801,7 +899,25 @@
           "title": "浙东港口城市兴起",
           "body": "唐开元置明州，宁波成为浙东海上门户。方言在太湖片南缘独立发展，与绍兴、台州之间形成过渡带。",
           "mapLabel": "浙东→明州",
-          "showArrow": true
+          "showArrow": true,
+          "stratumId": "jiangdong"
+        },
+        {
+          "year": 1000,
+          "era": "闽语移民点",
+          "from": [
+            24.48,
+            118.09
+          ],
+          "to": [
+            29.15,
+            121.95
+          ],
+          "showArrow": true,
+          "title": "沿海嵌入闽语点（沙塘湾等）",
+          "mapLabel": "闽→象山",
+          "stratumId": "min",
+          "body": "浙东沿海历史上有闽南移民点嵌于吴语区；沙塘湾等与甬江吴语并存，层次上属闽语岛而非甬江本层。"
         },
         {
           "year": 1200,
@@ -817,7 +933,25 @@
           "title": "甬江小片轮廓清晰",
           "body": "南宋吴语各片格局奠基时期，甬江一带已显「北吴偏南」特征：与苏沪可部分沟通，但乡音差距明显，尤其在声调与词汇。",
           "mapLabel": "甬江小片",
-          "showArrow": false
+          "showArrow": false,
+          "stratumId": "wuyu"
+        },
+        {
+          "year": 1397,
+          "era": "明爵溪千户所",
+          "from": [
+            34.0,
+            113.5
+          ],
+          "to": [
+            29.48,
+            121.95
+          ],
+          "showArrow": true,
+          "title": "爵溪军话岛叠官话层",
+          "mapLabel": "军→爵溪",
+          "stratumId": "zhongyuan",
+          "body": "明洪武设爵溪千户所，形成吴语化官话岛（所里话），与杭州临安层、金乡太湖飞地可对照观「岛」的不同成因。"
         },
         {
           "year": 1844,
@@ -833,7 +967,8 @@
           "title": "沪甬商贸加强语言接触",
           "body": "宁波开埠后与上海商贸、移民往来频繁，城市口音受上海话与通语影响，但鄞县、奉化等乡区仍保留强地方特征。",
           "mapLabel": "上海↔宁波",
-          "showArrow": true
+          "showArrow": true,
+          "stratumId": "tongyu"
         },
         {
           "year": 1987,
@@ -849,7 +984,8 @@
           "title": "太湖片甬江小片",
           "body": "今属太湖片甬江小片。常被用来说明：同属「北吴」，内部仍可有显著通话障碍。",
           "mapLabel": "甬江小片",
-          "showArrow": false
+          "showArrow": false,
+          "stratumId": "wuyu"
         }
       ],
       "shortTip": "太湖片甬江小片，偏南、与南吴联系强",
@@ -1064,7 +1200,8 @@
           "title": "浙中政区成型",
           "body": "隋唐婺州建置推动浙中开发。方言在金衢盆地与周边山地中分化，与北吴太湖片逐渐拉开距离。",
           "mapLabel": "婺州",
-          "showArrow": true
+          "showArrow": true,
+          "stratumId": "jiangdong"
         },
         {
           "year": 1127,
@@ -1080,7 +1217,8 @@
           "title": "南吴中部分化加剧",
           "body": "南宋以降，婺州一带内部口音差别已很可观。义乌、东阳、永康等后来各自成小片，通话不易。",
           "mapLabel": "婺州内部分化",
-          "showArrow": false
+          "showArrow": false,
+          "stratumId": "zhongyuan"
         },
         {
           "year": 1987,
@@ -1096,7 +1234,8 @@
           "title": "婺州片与处衢点合并为金衢片",
           "body": "新版分区将原婺州片与部分处衢点调整为金衢片。金华适合展示：分区名称在变，但「浙中难通」的事实一直在。",
           "mapLabel": "金衢片",
-          "showArrow": false
+          "showArrow": false,
+          "stratumId": "wuyu"
         },
         {
           "year": 2000,
@@ -1112,7 +1251,8 @@
           "title": "普通话与本地话并存",
           "body": "城市化与人口流动使城关话向通语靠拢，乡镇仍保留强婺州特征。地图上金衢色带是概括，点进去才是「百里不同音」。",
           "mapLabel": "金华",
-          "showArrow": false
+          "showArrow": false,
+          "stratumId": "tongyu"
         }
       ],
       "shortTip": "金衢片代表，浙中内部分歧大",
@@ -1161,7 +1301,8 @@
           "title": "吴语西向延伸",
           "body": "吴语自太湖流域西推至皖南。宣城一带成为西缘据点，同时开始与江淮官话、徽语接触。",
           "mapLabel": "苏南→宣城",
-          "showArrow": true
+          "showArrow": true,
+          "stratumId": "wuyu"
         },
         {
           "year": 1127,
@@ -1177,7 +1318,8 @@
           "title": "边缘地带的交错",
           "body": "南宋以后西缘吴语在行政与移民中呈交错、局部萎缩。同一府内可能吴语村与官话村并存。",
           "mapLabel": "宣州交错带",
-          "showArrow": false
+          "showArrow": false,
+          "stratumId": "zhongyuan"
         },
         {
           "year": 1700,
@@ -1193,7 +1335,8 @@
           "title": "徽语、官话持续渗入",
           "body": "徽商网络与官话行政用语从南、北两侧挤压宣州吴语。铜泾小片全浊声母通音化等变化，反映接触强度。",
           "mapLabel": "徽州↔宣城",
-          "showArrow": true
+          "showArrow": true,
+          "stratumId": "chu"
         },
         {
           "year": 1987,
@@ -1209,7 +1352,8 @@
           "title": "宣州片三小片",
           "body": "今宣州片分铜泾、太高、石陵。宣城是看「吴语西墙」的窗口：不是整齐色块，而是破碎的接触带。",
           "mapLabel": "宣州片",
-          "showArrow": false
+          "showArrow": false,
+          "stratumId": "wuyu"
         }
       ],
       "shortTip": "宣州片西缘，与官话、徽语交错",
@@ -1258,7 +1402,8 @@
           "title": "浙东沿海成片",
           "body": "唐置台州后，临海—黄岩—温岭一带吴语逐渐凝聚。相对温州，台州更易与北吴找到对应。",
           "mapLabel": "置台州",
-          "showArrow": true
+          "showArrow": true,
+          "stratumId": "jiangdong"
         },
         {
           "year": 1127,
@@ -1274,7 +1419,8 @@
           "title": "台州片定型",
           "body": "南宋吴语各片格局奠定，台州片作为南区中「近北吴、远温州」的一支固定下来。",
           "mapLabel": "台州片",
-          "showArrow": false
+          "showArrow": false,
+          "stratumId": "wuyu"
         },
         {
           "year": 1650,
@@ -1290,7 +1436,8 @@
           "title": "与瓯江片接触",
           "body": "南邻温州（瓯江片），沿海商贸带来口音接触，但整体仍保持过渡位置：北可勉强通，南则难通。",
           "mapLabel": "温州↔台州",
-          "showArrow": true
+          "showArrow": true,
+          "stratumId": "wuyu"
         },
         {
           "year": 1987,
@@ -1306,7 +1453,8 @@
           "title": "地图集中的台州片",
           "body": "《中国语言地图集》划出台州片约十余县市。本点是 choropleth 台州色带上的代表城。",
           "mapLabel": "台州片",
-          "showArrow": false
+          "showArrow": false,
+          "stratumId": "wuyu"
         }
       ],
       "shortTip": "台州片：南吴里相对靠近北吴的一支",
@@ -22088,8 +22236,9 @@
     "eraLayer": "旁白优先 background；副文显示 distribution；横轴仍用 dynasty",
     "timeline": "横轴：下层朝代色带，上层世纪刻度；长时段高亮区间，城市个案高亮事件点",
     "migration": "仅 showArrow=true 画弧；换城须清空旧 arrow 实例；勿叠两层不同色造成假渐变；零长度不要画",
-    "islands": "六片层叠 islandGeoJSON：半透明 fill + 虚线描边；点击同小片；★ 可去掉",
-    "strata": "侧栏或信息条可列 strata；长时段用 stratumFocus 提示本段主要叠哪一层"
+    "islands": "方言岛卡片可展示短 strata；stratumId 与色卡共用 stratumTypes 配色",
+    "strata": "侧栏或信息条可列 strata；长时段用 stratumFocus 提示本段主要叠哪一层",
+    "branches": "片区侧栏可用 strataSummary 一行提示主要层次"
   },
   "palette": {
     "branches": {
@@ -22435,7 +22584,25 @@
       "emphasis": true,
       "marker": "polygon",
       "fillColor": "#8B3A3A",
-      "hasPolygon": true
+      "hasPolygon": true,
+      "stratumId": "zhongyuan",
+      "strata": [
+        {
+          "id": "jiangdong",
+          "title": "北吴本层",
+          "body": "开埠/定都前属北部吴语连续体。"
+        },
+        {
+          "id": "zhongyuan",
+          "title": "临安官话层",
+          "body": "南宋定都带来汴洛通语，形成太湖片内方言岛。"
+        },
+        {
+          "id": "tongyu",
+          "title": "省会通语",
+          "body": "近现代省会地位强化文读与通语色彩。"
+        }
+      ]
     },
     {
       "id": "island-juexi",
@@ -22452,7 +22619,20 @@
       "marker": "polygon",
       "admin": "浙江宁波象山县爵溪街道",
       "fillColor": "#C47865",
-      "hasPolygon": true
+      "hasPolygon": true,
+      "stratumId": "zhongyuan",
+      "strata": [
+        {
+          "id": "zhongyuan",
+          "title": "军卫官话层",
+          "body": "明爵溪千户所驻军带来北方/通语口音。"
+        },
+        {
+          "id": "wuyu",
+          "title": "吴语化",
+          "body": "长期处甬江吴语包围，军话吴语化成「所里话」。"
+        }
+      ]
     },
     {
       "id": "island-jinxiang",
@@ -22469,7 +22649,20 @@
       "marker": "polygon",
       "admin": "浙江温州苍南县金乡镇",
       "fillColor": "#5B7C8A",
-      "hasPolygon": true
+      "hasPolygon": true,
+      "stratumId": "wuyu",
+      "strata": [
+        {
+          "id": "wuyu",
+          "title": "太湖片飞地",
+          "body": "明抗倭卫所后裔保留北吴口音，嵌于瓯语/闽语南缘。"
+        },
+        {
+          "id": "zhongyuan",
+          "title": "卫所建置层",
+          "body": "军卫制度是岛成因，语言本体却偏太湖吴语。"
+        }
+      ]
     },
     {
       "id": "island-shatangwan",
@@ -22486,7 +22679,20 @@
       "marker": "polygon",
       "admin": "浙江宁波象山县石浦镇沙塘湾",
       "fillColor": "#72B7B2",
-      "hasPolygon": true
+      "hasPolygon": true,
+      "stratumId": "min",
+      "strata": [
+        {
+          "id": "min",
+          "title": "闽南移民层",
+          "body": "象山沿海闽南话岛，嵌于甬江吴语区。"
+        },
+        {
+          "id": "wuyu",
+          "title": "吴语包围",
+          "body": "与甬江片接触，形成双语/转用压力。"
+        }
+      ]
     },
     {
       "id": "island-pumen",
@@ -22503,7 +22709,20 @@
       "marker": "polygon",
       "admin": "浙江温州苍南县蒲门一带",
       "fillColor": "#E45756",
-      "hasPolygon": true
+      "hasPolygon": true,
+      "stratumId": "wuyu",
+      "strata": [
+        {
+          "id": "wuyu",
+          "title": "瓯江特殊点",
+          "body": "苍南蒲门一带瓯语特殊点，与戍所传统相关。"
+        },
+        {
+          "id": "zhongyuan",
+          "title": "戍所接触",
+          "body": "明清戍所带来外部口音接触。"
+        }
+      ]
     },
     {
       "id": "island-nianbadu",
@@ -22520,7 +22739,20 @@
       "marker": "polygon",
       "admin": "浙江衢州江山市廿八都",
       "fillColor": "#C9A86A",
-      "hasPolygon": true
+      "hasPolygon": true,
+      "stratumId": "zhongyuan",
+      "strata": [
+        {
+          "id": "zhongyuan",
+          "title": "正字官话层",
+          "body": "廿八都「正字」为商路/戍卫背景下的官话岛。"
+        },
+        {
+          "id": "wuyu",
+          "title": "吴处包围",
+          "body": "处在浙闽赣交界吴语等语言包围中。"
+        }
+      ]
     },
     {
       "id": "island-piling-contact",
@@ -22534,7 +22766,20 @@
       "summary": "毗陵小片北接江淮官话，人称代词等偏官话型；仍属吴语，但是北缘接触带。",
       "mapLabel": "毗陵接触带",
       "emphasis": false,
-      "marker": "dot"
+      "marker": "dot",
+      "stratumId": "zhongyuan",
+      "strata": [
+        {
+          "id": "wuyu",
+          "title": "毗陵吴语层",
+          "body": "常州一带本为北吴。"
+        },
+        {
+          "id": "zhongyuan",
+          "title": "江淮官话接触",
+          "body": "宋元以降与江淮官话交错，形成接触带而非典型孤岛。"
+        }
+      ]
     },
     {
       "id": "note-yangzhou-exit",
@@ -22547,7 +22792,25 @@
       "summary": "今属江淮官话，不是吴语岛；是吴语底层被官话替换的「退出」样本，放在城市个案。",
       "mapLabel": "扬州（已非吴语）",
       "emphasis": true,
-      "marker": "star"
+      "marker": "star",
+      "stratumId": "zhongyuan",
+      "strata": [
+        {
+          "id": "wuyu",
+          "title": "历史吴语层",
+          "body": "隋唐至北宋文献仍见吴语底色。"
+        },
+        {
+          "id": "zhongyuan",
+          "title": "官话替换",
+          "body": "建炎南渡为关键转折，主体转为江淮官话。"
+        },
+        {
+          "id": "wuyu",
+          "title": "明初吴语再叠",
+          "body": "洪武江南移民再叠吴语印记，但未逆转官话主体。"
+        }
+      ]
     }
   ],
   "partitionNote": "六片+小片依语言地图集系统；方言岛分三类：①吴语区内官话/军话岛（杭州、爵溪等）；②非本片吴语飞地（金乡太湖片岛）；③异方言嵌岛（沙塘湾闽语等）。示意点位，非精确村落界。",

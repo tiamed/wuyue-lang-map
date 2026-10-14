@@ -1001,10 +1001,14 @@ map.on("load", () => {
     map.getCanvas().style.cursor = "pointer";
     const f = e.features && e.features[0];
     if (!f) return;
+    const isl = (data.dialectIslands || []).find((x) => x.id === f.properties.id);
+    const strataLine = isl && isl.strata && isl.strata.length
+      ? `<div style="margin-top:4px;font-size:11px;opacity:.8">层次：${isl.strata.map((s) => s.title || s.id).join(" → ")}</div>`
+      : "";
     popup
       .setLngLat(e.lngLat)
       .setHTML(
-        `<strong>${f.properties.name}</strong><div style="margin-top:4px;font-size:12px;opacity:.85">${f.properties.summary || f.properties.kind || ""}</div>`
+        `<strong>${f.properties.name}</strong><div style="margin-top:4px;font-size:12px;opacity:.85">${f.properties.summary || f.properties.kind || ""}</div>${strataLine}`
       )
       .addTo(map);
   });
@@ -1150,12 +1154,16 @@ function renderBranchView() {
         title: f.properties.name,
         sub: shortTip(f.properties),
         onClick: () => {
+          const br = (data.branches || []).find((b) => b.id === selectedBranchId);
+          const strataSum = br && br.strataSummary
+            ? `<strong>层次摘要</strong><div style="margin-top:4px">${br.strataSummary}</div>`
+            : "";
           setStory({
             kicker: "六片分支",
             title: f.properties.name,
             year: "",
             body: f.properties.summary || shortTip(f.properties),
-            extraHtml: subListHtml(selectedBranchId),
+            extraHtml: [strataSum, subListHtml(selectedBranchId)].filter(Boolean).join('<div style="height:8px"></div>'),
           });
         },
       });
@@ -1188,24 +1196,35 @@ function selectBranch(id) {
     selectedBranchId = id;
     const f = data.branchGeoJSON.features.find((x) => x.properties.id === id);
     if (f) {
+      const br = (data.branches || []).find((b) => b.id === id);
+      const strataSum = br && br.strataSummary
+        ? `<strong>层次摘要</strong><div style="margin-top:4px">${br.strataSummary}</div>`
+        : "";
+      const extras = [strataSum, subListHtml(id)].filter(Boolean).join('<div style="height:8px"></div>');
       setStory({
         kicker: "六片分支",
         title: f.properties.name,
         year: "",
         body: f.properties.summary || shortTip(f.properties),
-        extraHtml: subListHtml(id),
+        extraHtml: extras,
       });
       setMapInfo({
         kicker: "六片分支",
         title: f.properties.name,
-        sub: shortTip(f.properties),
+        sub: (br && br.strataSummary)
+          ? br.strataSummary.split(/[。；;]/)[0]
+          : shortTip(f.properties),
         onClick: () => {
+          const br2 = (data.branches || []).find((b) => b.id === id);
+          const strataSum2 = br2 && br2.strataSummary
+            ? `<strong>层次摘要</strong><div style="margin-top:4px">${br2.strataSummary}</div>`
+            : "";
           setStory({
             kicker: "六片分支",
             title: f.properties.name,
             year: "",
             body: f.properties.summary || shortTip(f.properties),
-            extraHtml: subListHtml(id),
+            extraHtml: [strataSum2, subListHtml(id)].filter(Boolean).join('<div style="height:8px"></div>'),
           });
         },
       });
@@ -1506,12 +1525,15 @@ function renderEraView() {
   const dist = era.distribution
     ? `<strong>分布</strong><div style="margin-top:4px">${era.distribution}</div>`
     : "";
+  const strataBlurb = era.strataBlurb
+    ? `<strong>层次</strong><div style="margin-top:4px">${era.strataBlurb}</div>`
+    : "";
   setStory({
     kicker: "长时段",
     title: era.label,
     year: `${yearText(era.yearStart)} — ${yearText(era.yearEnd)}${era.dynastyLabel ? " · " + era.dynastyLabel : ""}`,
     body: era.background || era.summary,
-    extraHtml: dist,
+    extraHtml: [strataBlurb, dist].filter(Boolean).join('<div style="height:8px"></div>'),
   });
   const distOne = (era.distribution || "").split(/[。；;]/)[0] || "";
   const focusLabels = (era.stratumFocus || []).map(stratumTypeLabel).filter(Boolean);
