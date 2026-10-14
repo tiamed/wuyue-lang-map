@@ -15,6 +15,11 @@ const BOUNDS = [
   [116.65, 27.14],
   [122.84, 32.71],
 ];
+// city-mode locked frame: Wu-Yue + a bit of inland China for migration context
+const CITY_FRAME = [
+  [112.2, 26.8],
+  [123.2, 35.2],
+];
 
 const root = document.documentElement;
 root.style.setProperty("--bg", ui.background);
@@ -29,6 +34,7 @@ const cityChips = document.getElementById("cityChips");
 const cityMeta = document.getElementById("cityMeta");
 const eventList = document.getElementById("eventList");
 const playBtn = document.getElementById("playBtn");
+const followMigrationEl = document.getElementById("followMigration");
 const storyKicker = document.getElementById("storyKicker");
 const storyTitle = document.getElementById("storyTitle");
 const storyYear = document.getElementById("storyYear");
@@ -46,6 +52,8 @@ let selectedEventIdx = 0;
 let eraIdx = 4;
 let playTimer = null;
 let eraPlayTimer = null;
+let followMigration = false;
+let cityFrameReady = false;
 const labelMarkers = [];
 const migMarkers = [];
 
@@ -223,12 +231,20 @@ function fitWuYue(duration = 0) {
   });
 }
 
+function fitCityFrame(duration = 0) {
+  map.fitBounds(CITY_FRAME, {
+    padding: { top: 56, bottom: 48, left: 48, right: 48 },
+    duration,
+    maxZoom: 6.2,
+  });
+}
+
 function fitMigration(bounds, toLngLat) {
+  if (!followMigration) return;
   if (!bounds) {
-    fitWuYue(400);
+    fitCityFrame(800);
     return;
   }
-  // pad north so Yangzhou / northern tip isn't clipped
   const [[minLng, minLat], [maxLng, maxLat]] = bounds;
   const padLat = Math.max(0.8, (maxLat - minLat) * 0.25);
   const padLng = Math.max(0.8, (maxLng - minLng) * 0.2);
@@ -236,7 +252,6 @@ function fitMigration(bounds, toLngLat) {
     [minLng - padLng, minLat - padLat * 0.35],
     [maxLng + padLng, maxLat + padLat * 1.15],
   ];
-  // always include Wu-Yue northern edge a bit when destination is Yangzhou-ish
   if (toLngLat) {
     b[0][0] = Math.min(b[0][0], toLngLat[0] - 0.6);
     b[0][1] = Math.min(b[0][1], toLngLat[1] - 0.5);
@@ -245,7 +260,7 @@ function fitMigration(bounds, toLngLat) {
   }
   map.fitBounds(b, {
     padding: { top: 96, bottom: 64, left: 56, right: 56 },
-    duration: 500,
+    duration: 900,
     maxZoom: 6.0,
     minZoom: 3.6,
   });
@@ -439,8 +454,10 @@ map.on("load", () => {
 
 window.addEventListener("resize", () => {
   map.resize();
-  if (mode === "city") renderCityView();
-  else fitWuYue();
+  if (mode === "city") {
+    cityFrameReady = false;
+    renderCityView({ camera: "frame" });
+  } else fitWuYue();
 });
 
 function stopCityPlay() {
@@ -575,7 +592,7 @@ function buildCityChips() {
   });
 }
 
-function renderCityView() {
+function renderCityView(opts = {}) {
   setChinaVisible(true);
   restoreBranchColors();
   map.setPaintProperty("branches-fill", "fill-opacity", 0.42);
@@ -618,7 +635,14 @@ function renderCityView() {
      <div class="row"><i style="background:${ui.accent}"></i>${ev && ev.mapLabel ? ev.mapLabel : (bundle.fromName + " → " + bundle.toName)}</div>
      <div class="row"><i style="background:${ui.cityStroke}"></i>${selectedCity.name} 轮廓</div>`
   );
-  fitMigration(bundle.bounds, bundle.to);
+  const camera = opts.camera || "none";
+  if (camera === "frame" || (!cityFrameReady && camera !== "follow")) {
+    fitCityFrame(camera === "frame" ? 600 : 0);
+    cityFrameReady = true;
+  } else if (camera === "follow" && followMigration) {
+    fitMigration(bundle.bounds, bundle.to);
+  }
+  // default: no camera move when switching city/event
 }
 
 function syncCityPanel() {
@@ -636,7 +660,7 @@ function syncCityPanel() {
       stopCityPlay();
       selectedEventIdx = idx;
       syncCityPanel();
-      renderCityView();
+      renderCityView({ camera: followMigration ? "follow" : "none" });
     });
     eventList.appendChild(li);
   });
@@ -647,7 +671,7 @@ function pickCity(id, autoplay) {
   selectedCity = data.cities.find((c) => c.id === id) || selectedCity;
   selectedEventIdx = 0;
   syncCityPanel();
-  renderCityView();
+  renderCityView({ camera: "none" });
   if (autoplay) startCityAutoplay();
 }
 
@@ -656,7 +680,7 @@ function startCityAutoplay() {
   const maxIdx = Math.min(2, selectedCity.events.length - 1);
   selectedEventIdx = 0;
   syncCityPanel();
-  renderCityView();
+  renderCityView({ camera: "none" });
   playBtn.classList.add("playing");
   playBtn.textContent = "播放中…";
   let step = 0;
@@ -668,7 +692,7 @@ function startCityAutoplay() {
     }
     selectedEventIdx = step;
     syncCityPanel();
-    renderCityView();
+    renderCityView({ camera: followMigration ? "follow" : "none" });
   }, 2400);
 }
 
@@ -807,6 +831,15 @@ playBtn.addEventListener("click", () => {
   if (playTimer) stopCityPlay();
   else startCityAutoplay();
 });
+followMigrationEl.addEventListener("change", () => {
+  followMigration = followMigrationEl.checked;
+  if (mode === "city" && followMigration) {
+    renderCityView({ camera: "follow" });
+  } else if (mode === "city") {
+    cityFrameReady = false;
+    renderCityView({ camera: "frame" });
+  }
+});
 eraPrev.addEventListener("click", () => {
   stopEraPlay();
   setEra(eraIdx - 1);
@@ -860,8 +893,9 @@ function setMode(next) {
   } else {
     selectedCity = data.cities.find((c) => c.id === "yangzhou") || data.cities[0];
     selectedEventIdx = 0;
+    cityFrameReady = false;
     syncCityPanel();
-    renderCityView();
+    renderCityView({ camera: "frame" });
     startCityAutoplay();
   }
 }

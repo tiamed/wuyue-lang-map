@@ -203,3 +203,9 @@ label { display: block; color: var(--muted); font-size: 0.8rem; margin-bottom: 6
   line-height: 1.35;
   color: var(--muted);
 }
+
+.follow-toggle {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 0.78rem; color: var(--muted); cursor: pointer; user-select: none;
+}
+.follow-toggle input { accent-color: var(--accent); }
