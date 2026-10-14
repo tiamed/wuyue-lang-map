@@ -202,8 +202,9 @@ function setStory({ kicker, title, year, body, extraHtml }) {
     storyExtra.innerHTML = "";
     storyExtra.classList.add("hidden");
   }
-  // 详情钉在侧栏顶：更新后滚回故事区，避免人还停在列表下方
-  if (panelHead) panelHead.scrollTop = 0;
+  // 详情钉在侧栏顶：故事区内回到顶部；侧栏滚回粘性头，列表仍够得到
+  const storyEl = document.getElementById("storyPanel");
+  if (storyEl) storyEl.scrollTop = 0;
   const panel = document.querySelector(".panel");
   if (panel && panelHead) {
     const headTop = panelHead.offsetTop;
