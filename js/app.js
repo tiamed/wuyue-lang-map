@@ -131,8 +131,13 @@ function migrationBundle(ev, cityName) {
   const fromLat = ev.from[0];
   const toLng = ev.to[1];
   const toLat = ev.to[0];
-  const fromName = ev.fromName || "起点";
-  const toName = ev.toName || cityName || "终点";
+  let fromName = ev.fromName || "起点";
+  let toName = ev.toName || cityName || "终点";
+  if (ev.mapLabel && ev.mapLabel.includes("→")) {
+    const parts = ev.mapLabel.split("→").map((s) => s.trim());
+    if (parts[0]) fromName = parts[0];
+    if (parts[1]) toName = parts[1];
+  }
   return {
     fromName,
     toName,
@@ -563,7 +568,8 @@ function buildCityChips() {
     btn.type = "button";
     btn.className = "city-chip";
     btn.dataset.id = c.id;
-    btn.innerHTML = `<span class="chip-name">${c.name}</span><span class="chip-branch">${c.branch}</span>`;
+    const tip = (c.blurb || c.shortTip || "").slice(0, 28);
+    btn.innerHTML = `<span class="chip-name">${c.name}</span><span class="chip-branch">${c.branch}</span>${tip ? `<span class="chip-blurb">${tip}${ (c.blurb||c.shortTip||"").length>28 ? "…" : ""}</span>` : ""}`;
     btn.addEventListener("click", () => pickCity(c.id, true));
     cityChips.appendChild(btn);
   });
@@ -598,21 +604,15 @@ function renderCityView() {
   showCityLabels(selectedCity.id);
   showMigEndLabels(bundle);
 
-  const blurb = selectedCity.blurb ? `\n\n${selectedCity.blurb}` : "";
   setStory({
     kicker: "城市个案 · " + selectedCity.name,
     title: ev ? ev.title : selectedCity.name,
     year: ev ? `${yearText(ev.year)} · ${ev.era || ""}` : "",
     body: ev
-      ? `迁徙：${bundle.fromName} → ${bundle.toName}\n\n${ev.body}${blurb}`
-      : blurb,
+      ? `${ev.mapLabel ? "迁徙：" + ev.mapLabel : "迁徙：" + bundle.fromName + " → " + bundle.toName}\n\n${ev.body}`
+      : (selectedCity.blurb || ""),
   });
 
-  renderLegend(
-    `<div class="row"><i style="background:#C4B6A4"></i>中国省界（今界示意）</div>
-     <div class="row"><i style="background:${ui.accent}"></i>${bundle.fromName || "—"} → ${bundle.toName || "—"}</div>
-     <div class="row"><i style="background:${ui.cityStroke}"></i>${selectedCity.name} 轮廓</div>`
-  );
   fitMigration(bundle.bounds, bundle.to);
 }
 
@@ -626,7 +626,7 @@ function syncCityPanel() {
     const li = document.createElement("li");
     if (idx === selectedEventIdx) li.classList.add("active");
     const b = migrationBundle(ev, selectedCity.name);
-    li.innerHTML = `<span class="year">${yearText(ev.year)} · ${ev.era || ""}</span><strong>${ev.title}</strong><span class="body" style="display:block;margin-top:4px;font-size:.78rem">${b.fromName} → ${b.toName}</span>`;
+    li.innerHTML = `<span class="year">${yearText(ev.year)} · ${ev.era || ""}</span><strong>${ev.title}</strong><span class="body" style="display:block;margin-top:4px;font-size:.78rem">${ev.mapLabel || (b.fromName + " → " + b.toName)}</span>`;
     li.addEventListener("click", () => {
       stopCityPlay();
       selectedEventIdx = idx;

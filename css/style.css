@@ -196,3 +196,10 @@ label { display: block; color: var(--muted); font-size: 0.8rem; margin-bottom: 6
   font-size: 11px;
   opacity: 0.92;
 }
+.city-chip .chip-blurb {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.72rem;
+  line-height: 1.35;
+  color: var(--muted);
+}
