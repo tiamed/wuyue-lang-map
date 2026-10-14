@@ -272,16 +272,29 @@ function subFillColorExpr() {
 
 function applySubBranchMode() {
   if (!map.getLayer("sub-fill")) return;
-  const on = mode === "branch" && showSubBranches;
+  const inBranch = mode === "branch";
+  const showSelected = inBranch && !!selectedBranchId;
+  const showAll = inBranch && showSubBranches && !selectedBranchId;
+  const on = showSelected || showAll;
   setSubBranchLayersVisible(on);
-  // when viewing sub-slices, fade the six parent fills
-  if (mode === "branch" && map.getLayer("branches-fill")) {
+  const parentFilter = showSelected
+    ? ["==", ["get", "parent"], selectedBranchId]
+    : null;
+  ["sub-fill", "sub-line", "sub-branches-circle"].forEach((id) => {
+    if (map.getLayer(id)) map.setFilter(id, parentFilter);
+  });
+  // 看全部小片时淡化六片底；单选某片时仍用选中高亮，小面叠在上面
+  if (inBranch && map.getLayer("branches-fill")) {
     map.setPaintProperty(
       "branches-fill",
       "fill-opacity",
-      on ? 0.14 : opacityExprForBranches(null, selectedBranchId)
+      showAll ? 0.14 : opacityExprForBranches(null, selectedBranchId)
     );
   }
+}
+
+function subsVisible() {
+  return mode === "branch" && (!!selectedBranchId || showSubBranches);
 }
 
 function islandFillColorExpr() {
@@ -684,31 +697,56 @@ function showCityLabels(activeId) {
 
 function showBranchLabels() {
   clearMarkers(labelMarkers);
-  if (!showSubBranches) {
-    branchCentroids().forEach((b) => {
-      const el = makeLabel(b.name, "branch-label");
-      el.style.borderColor = b.fillColor;
-      labelMarkers.push(
-        new maplibregl.Marker({ element: el, anchor: "center" })
-          .setLngLat([b.lng, b.lat])
-          .addTo(map)
-      );
-    });
-  } else {
-    // 小片名：仅文字标签锚在中心点（岛范围靠 fill 图层，不用 DOM 图标）
+  if (showSubBranches && !selectedBranchId) {
+    // 勾选看全部小片：小片文字标签
     (data.subBranches || []).forEach((s) => {
-      const dim =
-        selectedBranchId && s.parent !== selectedBranchId ? " dim" : "";
       const short =
         s.name.replace(/小片|（.*）/g, "").trim() || s.name;
-      const el = makeLabel(short, "sub-label" + dim);
+      const el = makeLabel(short, "sub-label");
       labelMarkers.push(
         new maplibregl.Marker({ element: el, anchor: "center" })
           .setLngLat([s.lng, s.lat])
           .addTo(map)
       );
     });
+    return;
   }
+  if (selectedBranchId) {
+    // 选中母片：片标签 + 该片小片标签
+    branchCentroids()
+      .filter((b) => b.id === selectedBranchId)
+      .forEach((b) => {
+        const el = makeLabel(b.name, "branch-label");
+        el.style.borderColor = b.fillColor;
+        labelMarkers.push(
+          new maplibregl.Marker({ element: el, anchor: "center" })
+            .setLngLat([b.lng, b.lat])
+            .addTo(map)
+        );
+      });
+    (data.subBranches || [])
+      .filter((s) => s.parent === selectedBranchId)
+      .forEach((s) => {
+        const short =
+          s.name.replace(/小片|（.*）/g, "").trim() || s.name;
+        const el = makeLabel(short, "sub-label");
+        labelMarkers.push(
+          new maplibregl.Marker({ element: el, anchor: "center" })
+            .setLngLat([s.lng, s.lat])
+            .addTo(map)
+        );
+      });
+    return;
+  }
+  branchCentroids().forEach((b) => {
+    const el = makeLabel(b.name, "branch-label");
+    el.style.borderColor = b.fillColor;
+    labelMarkers.push(
+      new maplibregl.Marker({ element: el, anchor: "center" })
+        .setLngLat([b.lng, b.lat])
+        .addTo(map)
+    );
+  });
 }
 
 function showMigEndLabels(bundle) {
@@ -926,7 +964,7 @@ map.on("load", () => {
   });
   const bindSubHover = (layerId) => {
     map.on("mousemove", layerId, (e) => {
-      if (mode !== "branch" || !showSubBranches) return;
+      if (!subsVisible()) return;
       map.getCanvas().style.cursor = "pointer";
       const f = e.features && e.features[0];
       if (!f) return;
@@ -943,9 +981,13 @@ map.on("load", () => {
       popup.remove();
     });
     map.on("click", layerId, (e) => {
-      if (mode !== "branch" || !showSubBranches) return;
+      if (!subsVisible()) return;
       const f = e.features && e.features[0];
-      if (f && f.properties.parent) selectBranch(f.properties.parent);
+      if (!f || !f.properties.parent) return;
+      // 已选该母片时再点小面不取消选中
+      if (selectedBranchId !== f.properties.parent) {
+        selectBranch(f.properties.parent);
+      }
     });
   };
   bindSubHover("sub-fill");
@@ -1073,10 +1115,13 @@ function renderBranchView() {
           `<div class="row"><i style="background:${f.properties.fillColor}"></i>${f.properties.name}</div>`
       )
       .join("") +
-      (showSubBranches
-        ? `<div class="row"><i style="background:#4A6B7C"></i>片内小片色块（示意）</div>`
-        : `<div class="row"><i style="background:#8B3A3A;border:1px dashed ${ui.accent}"></i>方言岛色块（虚线边）</div>
-      <div class="row"><i style="background:#72B7B2;border:1px dashed #6E6A64"></i>嵌岛示意</div>`) +
+      (selectedBranchId || showSubBranches
+        ? `<div class="row"><i style="background:#4A6B7C"></i>${selectedBranchId ? "当前片·小片轮廓" : "片内小片色块（示意）"}</div>`
+        : "") +
+      (!selectedBranchId
+        ? `<div class="row"><i style="background:#8B3A3A;border:1px dashed ${ui.accent}"></i>方言岛色块（虚线边）</div>
+      <div class="row"><i style="background:#72B7B2;border:1px dashed #6E6A64"></i>嵌岛示意</div>`
+        : "") +
       note
   );
   if (selectedBranchId) {
