@@ -613,6 +613,11 @@ function renderCityView() {
       : (selectedCity.blurb || ""),
   });
 
+  renderLegend(
+    `<div class="row"><i style="background:#C4B6A4"></i>中国省界（今界示意）</div>
+     <div class="row"><i style="background:${ui.accent}"></i>${ev && ev.mapLabel ? ev.mapLabel : (bundle.fromName + " → " + bundle.toName)}</div>
+     <div class="row"><i style="background:${ui.cityStroke}"></i>${selectedCity.name} 轮廓</div>`
+  );
   fitMigration(bundle.bounds, bundle.to);
 }
 
