@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "0.5.3",
-    "note": "v0.5.3：长时段补 focusBranchIds，便于分段点亮六片面",
+    "note": "v0.5.3：长时段补 focusBranchIds，便于分段点亮六片面；主图 MapLibre fitBounds + 长时段竖向时间线",
     "crs": "WGS84"
   },
   "eras": [

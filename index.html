@@ -4,13 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>吴越语言变迁</title>
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" />
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
   <header class="top">
     <div>
       <h1>吴越地区语言变迁</h1>
-      <p class="sub">thematic geo · 示意行政区聚合，非精确同言线 · 数据 v0.5.3 · 江南风</p>
+      <p class="sub">MapLibre · 示意行政区聚合，非精确同言线 · 数据 v0.5.3 · 江南风</p>
     </div>
     <nav class="layers" id="layerTabs">
       <button type="button" data-layer="era">长时段</button>
@@ -24,13 +25,20 @@
         <p class="story-kicker" id="storyKicker">六片分支</p>
         <h2 class="story-title" id="storyTitle">点击地图或列表</h2>
         <p class="story-year" id="storyYear"></p>
-        <p class="story-body" id="storyBody">半透明叠色看片区；再点同一片可取消选中。</p>
+        <p class="story-body" id="storyBody">单击单选填色，再点取消。悬停只看片名与一句简介。</p>
       </article>
 
       <div id="eraControls" class="layer-pane hidden">
-        <label for="eraSlider">时间轴</label>
-        <input type="range" id="eraSlider" min="0" max="6" value="4" step="1" />
-        <p class="hint">拖到某段只亮相关城市；旁白在上方。</p>
+        <div class="era-nav">
+          <button type="button" id="eraPrev" class="era-nav-btn">上一段</button>
+          <button type="button" id="eraPlay" class="era-nav-btn">自动讲述</button>
+          <button type="button" id="eraNext" class="era-nav-btn">下一段</button>
+        </div>
+        <p class="hint">点节点切换；空格键也可翻下一段。</p>
+        <ol id="eraTimeline" class="timeline"></ol>
+        <div class="era-progress" aria-hidden="true">
+          <div id="eraProgressBar" class="era-progress-bar"></div>
+        </div>
       </div>
 
       <div id="branchControls" class="layer-pane">
@@ -49,13 +57,14 @@
         <p class="hint">箭头只跟当前事件；地图点击只换上方文案，不跳页。</p>
       </div>
 
-      <footer class="credit">Observable Plot · GitHub Pages</footer>
+      <footer class="credit">MapLibre GL · GitHub Pages · 无底图 API</footer>
     </aside>
     <section class="map-wrap">
-      <div id="plot" aria-label="吴越语言地图"></div>
+      <div id="map" aria-label="吴越语言地图"></div>
       <div id="legend" class="legend"></div>
     </section>
   </main>
+  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
   <script type="module" src="js/app.js"></script>
 </body>
 </html>
