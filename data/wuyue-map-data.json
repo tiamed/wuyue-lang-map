@@ -1,7 +1,7 @@
 {
   "meta": {
-    "version": "0.5",
-    "note": "v0.5：六片改为地级行政轮廓聚合；城市层附 cityOutlines 真实边界；仍非精确同言线",
+    "version": "0.5.1",
+    "note": "v0.5：六片改为地级行政轮廓聚合；城市层附 cityOutlines 真实边界；仍非精确同言线；v0.5.1 江南风配色",
     "crs": "WGS84"
   },
   "eras": [
@@ -70,7 +70,7 @@
       "lat": 30.878,
       "lng": 120.2906,
       "summary": "北区主体，人口最多；内含毗陵、苏嘉湖、上海、杭州、临绍、甬江等小片。内部通话程度相对较高，杭州小片特立。",
-      "fillColor": "#4C78A8",
+      "fillColor": "#5B7C8A",
       "admins": [
         "苏州市",
         "无锡市",
@@ -93,7 +93,7 @@
       "lat": 28.6843,
       "lng": 120.9815,
       "summary": "南区之一，语音与北区相对接近，部分可与北部吴语有限沟通。",
-      "fillColor": "#F58518",
+      "fillColor": "#7F9A72",
       "admins": [
         "台州市"
       ]
@@ -105,7 +105,7 @@
       "lat": 27.8734,
       "lng": 120.3579,
       "summary": "以温州话为核心，常被视为吴语中最难互通的一片；保留较多南吴保守特征。",
-      "fillColor": "#E45756",
+      "fillColor": "#C47865",
       "admins": [
         "温州市"
       ]
@@ -117,7 +117,7 @@
       "lat": 28.9616,
       "lng": 119.4372,
       "summary": "旧婺州片与部分处衢点调整后的一片；片内分歧较大。",
-      "fillColor": "#72B7B2",
+      "fillColor": "#C9A86A",
       "admins": [
         "金华市",
         "衢州市"
@@ -130,7 +130,7 @@
       "lat": 28.1798,
       "lng": 119.5971,
       "summary": "旧处衢片调整后的一片，分布于浙南及赣东北、闽北一角；与其他片通话困难。",
-      "fillColor": "#54A24B",
+      "fillColor": "#6F8F80",
       "admins": [
         "丽水市"
       ]
@@ -142,7 +142,7 @@
       "lat": 30.8008,
       "lng": 118.3217,
       "summary": "西区吴语，散在皖南、苏西南及浙西北；内分铜泾、太高、石陵，与官话、徽语交错，差异大。",
-      "fillColor": "#B279A2",
+      "fillColor": "#9A7B8C",
       "admins": [
         "宣城市",
         "芜湖市",
@@ -771,7 +771,7 @@
           "id": "branch-taihu",
           "name": "太湖片",
           "summary": "北区主体，人口最多；内含毗陵、苏嘉湖、上海、杭州、临绍、甬江等小片。内部通话程度相对较高，杭州小片特立。",
-          "fillColor": "#4C78A8",
+          "fillColor": "#5B7C8A",
           "layer": "branch",
           "admins": [
             "苏州市",
@@ -9525,7 +9525,7 @@
           "id": "branch-taizhou",
           "name": "台州片",
           "summary": "南区之一，语音与北区相对接近，部分可与北部吴语有限沟通。",
-          "fillColor": "#F58518",
+          "fillColor": "#7F9A72",
           "layer": "branch",
           "admins": [
             "台州市"
@@ -10548,7 +10548,7 @@
           "id": "branch-oujiang",
           "name": "瓯江片",
           "summary": "以温州话为核心，常被视为吴语中最难互通的一片；保留较多南吴保守特征。",
-          "fillColor": "#E45756",
+          "fillColor": "#C47865",
           "layer": "branch",
           "admins": [
             "温州市"
@@ -11627,7 +11627,7 @@
           "id": "branch-jinqu",
           "name": "金衢片",
           "summary": "旧婺州片与部分处衢点调整后的一片；片内分歧较大。",
-          "fillColor": "#72B7B2",
+          "fillColor": "#C9A86A",
           "layer": "branch",
           "admins": [
             "金华市",
@@ -12577,7 +12577,7 @@
           "id": "branch-shangli",
           "name": "上丽片",
           "summary": "旧处衢片调整后的一片，分布于浙南及赣东北、闽北一角；与其他片通话困难。",
-          "fillColor": "#54A24B",
+          "fillColor": "#6F8F80",
           "layer": "branch",
           "admins": [
             "丽水市"
@@ -13282,7 +13282,7 @@
           "id": "branch-xuanzhou",
           "name": "宣州片",
           "summary": "西区吴语，散在皖南、苏西南及浙西北；内分铜泾、太高、石陵，与官话、徽语交错，差异大。",
-          "fillColor": "#B279A2",
+          "fillColor": "#9A7B8C",
           "layer": "branch",
           "admins": [
             "宣城市",
@@ -21501,5 +21501,24 @@
   "ux": {
     "branchLayer": "用 branchGeoJSON 填色；点击面显示片名+summary+admins；默认半透明，勿一次全选高亮到看不清",
     "cityLayer": "底用 cityOutlines 勾行政区轮廓；点/面点击打开该城时间轴事件列表；迁徙箭头按 events.from→to 画，默认只显示当前选中城"
+  },
+  "palette": {
+    "branches": {
+      "branch-taihu": "#5B7C8A",
+      "branch-taizhou": "#7F9A72",
+      "branch-oujiang": "#C47865",
+      "branch-jinqu": "#C9A86A",
+      "branch-shangli": "#6F8F80",
+      "branch-xuanzhou": "#9A7B8C"
+    },
+    "ui": {
+      "background": "#F3EDE2",
+      "ink": "#2C2A28",
+      "mutedInk": "#6E6A64",
+      "water": "#A8C0C4",
+      "accent": "#8B3A3A",
+      "cityStroke": "#3D4F56",
+      "cityFill": "rgba(91,124,138,0.18)"
+    }
   }
 }
