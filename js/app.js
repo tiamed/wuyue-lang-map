@@ -66,7 +66,6 @@ let playTimer = null;
 let eraPlayTimer = null;
 let followMigration = false;
 let showSubBranches = false;
-let cityIntroPlayed = false;
 let cityFrameReady = false;
 const labelMarkers = [];
 const migMarkers = [];
@@ -1116,6 +1115,10 @@ function restoreBranchColors() {
   map.setPaintProperty("branches-fill", "fill-color", branchFillColorExpr());
 }
 
+function renderBranchLegend() {
+  renderBranchLegend();
+}
+
 function renderBranchView() {
   hideTimeAxis();
   setChinaVisible(false);
@@ -1237,6 +1240,7 @@ function selectBranch(id) {
   if (mode === "branch") {
     applySubBranchMode();
     showBranchLabels();
+    renderBranchLegend();
   }
 }
 
@@ -1723,11 +1727,7 @@ function setMode(next) {
       cityFrameReady = false;
       syncCityPanel();
       renderCityView({ camera: "frame" });
-      // 仅第一次进城市个案自动讲述；之后换城/进层都改手动播放
-      if (!cityIntroPlayed) {
-        cityIntroPlayed = true;
-        startCityAutoplay();
-      }
+      // 进层不自动播，等点「播放」
     }
   };
   applyView();
