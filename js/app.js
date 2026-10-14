@@ -233,22 +233,47 @@ function citiesGeoJSON() {
   };
 }
 
+
+function subBranchAnchor(s) {
+  if (s && Number.isFinite(s.lng) && Number.isFinite(s.lat)) return [s.lng, s.lat];
+  const f = ((data.subBranchGeoJSON && data.subBranchGeoJSON.features) || []).find(
+    (x) => x.properties && x.properties.id === s.id
+  );
+  if (!f || !f.geometry) return null;
+  const g = f.geometry;
+  let pts = [];
+  if (g.type === "Polygon") pts = g.coordinates[0] || [];
+  else if (g.type === "MultiPolygon") {
+    for (const poly of g.coordinates) pts = pts.concat(poly[0] || []);
+  } else if (g.type === "Point") return g.coordinates;
+  if (!pts.length) return null;
+  const lng = pts.reduce((a, p) => a + p[0], 0) / pts.length;
+  const lat = pts.reduce((a, p) => a + p[1], 0) / pts.length;
+  return [lng, lat];
+}
+
 function subBranchesGeoJSON() {
   const list = data.subBranches || [];
   return {
     type: "FeatureCollection",
-    features: list.map((s) => ({
-      type: "Feature",
-      properties: {
-        id: s.id,
-        name: s.name,
-        parent: s.parent,
-        summary: s.summary || "",
-        area: s.area || "",
-        island: s.id === "sub-hangzhou",
-      },
-      geometry: { type: "Point", coordinates: [s.lng, s.lat] },
-    })),
+    features: list
+      .map((s) => {
+        const coord = subBranchAnchor(s);
+        if (!coord) return null;
+        return {
+          type: "Feature",
+          properties: {
+            id: s.id,
+            name: s.name,
+            parent: s.parent,
+            summary: s.summary || "",
+            area: s.area || "",
+            island: s.id === "sub-hangzhou",
+          },
+          geometry: { type: "Point", coordinates: coord },
+        };
+      })
+      .filter(Boolean),
   };
 }
 
@@ -703,12 +728,14 @@ function showBranchLabels() {
   if (showSubBranches && !selectedBranchId) {
     // 勾选看全部小片：小片文字标签
     (data.subBranches || []).forEach((s) => {
+      const coord = subBranchAnchor(s);
+      if (!coord) return;
       const short =
         s.name.replace(/小片|（.*）/g, "").trim() || s.name;
       const el = makeLabel(short, "sub-label");
       labelMarkers.push(
         new maplibregl.Marker({ element: el, anchor: "center" })
-          .setLngLat([s.lng, s.lat])
+          .setLngLat(coord)
           .addTo(map)
       );
     });
@@ -730,12 +757,14 @@ function showBranchLabels() {
     (data.subBranches || [])
       .filter((s) => s.parent === selectedBranchId)
       .forEach((s) => {
+        const coord = subBranchAnchor(s);
+        if (!coord) return;
         const short =
           s.name.replace(/小片|（.*）/g, "").trim() || s.name;
         const el = makeLabel(short, "sub-label");
         labelMarkers.push(
           new maplibregl.Marker({ element: el, anchor: "center" })
-            .setLngLat([s.lng, s.lat])
+            .setLngLat(coord)
             .addTo(map)
         );
       });
