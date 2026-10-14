@@ -272,29 +272,42 @@ function sampleQuadratic(from, to, control, n = 48) {
 }
 
 function migrationBundle(ev, cityName) {
-  if (!ev || !ev.from || !ev.to) {
-    return {
-      line: { type: "FeatureCollection", features: [] },
-      fromName: "",
-      toName: cityName || "终点",
-      bounds: null,
-      from: null,
-      to: null,
-      control: null,
-      apex: null,
-      mapLabel: "",
-    };
-  }
+  const empty = {
+    line: { type: "FeatureCollection", features: [] },
+    fromName: "",
+    toName: cityName || "终点",
+    bounds: null,
+    from: null,
+    to: null,
+    control: null,
+    apex: null,
+    mapLabel: "",
+    showArrow: false,
+  };
+  if (!ev || !ev.from || !ev.to) return empty;
   const fromLng = ev.from[1];
   const fromLat = ev.from[0];
   const toLng = ev.to[1];
   const toLat = ev.to[0];
+  const samePoint =
+    Math.abs(fromLng - toLng) < 1e-5 && Math.abs(fromLat - toLat) < 1e-5;
+  // local evolution / explicit flag — never feed degenerate arcs to the plugin
+  const showArrow = ev.showArrow !== false && !samePoint;
   let fromName = ev.fromName || "起点";
   let toName = ev.toName || cityName || "终点";
   if (ev.mapLabel && ev.mapLabel.includes("→")) {
     const parts = ev.mapLabel.split("→").map((s) => s.trim());
     if (parts[0]) fromName = parts[0];
     if (parts[1]) toName = parts[1];
+  }
+  if (!showArrow) {
+    return {
+      ...empty,
+      fromName,
+      toName,
+      mapLabel: ev.mapLabel || "",
+      showArrow: false,
+    };
   }
   const from = [fromLng, fromLat];
   const to = [toLng, toLat];
@@ -308,6 +321,7 @@ function migrationBundle(ev, cityName) {
     to,
     control,
     apex,
+    showArrow: true,
     mapLabel: ev.mapLabel || fromName + " → " + toName,
     bounds: [
       [Math.min(fromLng, toLng, control[0]), Math.min(fromLat, toLat, control[1])],
@@ -347,89 +361,92 @@ function ensureMigArrows() {
     sourceId: "mig-arc",
     layerIdPrefix: "mig-arc",
   });
-  // map already past "load" — init sources/layers ourselves
+  // map already past "load" — source only; we own solid (non-gradient) layers
   if (!map.getSource(migArrows.sourceId)) {
     migArrows.addSource();
-    migArrows.addLayers();
+  }
+  clearMigArc();
+}
+
+function clearMigArc() {
+  ensureMigArrows();
+  if (!migArrows) return;
+  migArrows.arrows = [];
+  migArrows.jsonData = [];
+  migArrows.updateSource();
+}
+
+function ensureMigArcLayers(color) {
+  const prefix = migArrows.layerIdPrefix;
+  const tailId = `${prefix}_tails_${color}`;
+  // drop any leftover white/gradient tails from older builds
+  for (const c of [...migArrows.lineColors]) {
+    const id = `${prefix}_tails_${c}`;
+    if (c !== color && map.getLayer(id)) map.removeLayer(id);
+  }
+  migArrows.lineColors = [color];
+  if (map.getLayer(tailId)) {
+    // solid stroke — no transparent→color gradient (reads as “weird fade”)
+    try {
+      map.setPaintProperty(tailId, "line-gradient", undefined);
+    } catch (_) {}
+    map.setPaintProperty(tailId, "line-color", color);
+    map.setPaintProperty(tailId, "line-width", ["get", "width"]);
+    map.setPaintProperty(tailId, "line-opacity", 0.95);
+  } else {
+    map.addLayer(
+      {
+        id: tailId,
+        source: migArrows.sourceId,
+        filter: ["all", ["==", "kind", "arrow-tail"], ["==", "color", color]],
+        type: "line",
+        layout: { "line-cap": "round", "line-join": "round" },
+        paint: {
+          "line-color": color,
+          "line-width": ["get", "width"],
+          "line-opacity": 0.95,
+        },
+      },
+      migArrows.placeBelow || undefined
+    );
+  }
+  const headId = `${prefix}_heads`;
+  if (!map.getLayer(headId)) {
+    map.addLayer(
+      {
+        id: headId,
+        source: migArrows.sourceId,
+        filter: ["==", "kind", "arrow-head"],
+        type: "fill",
+        paint: { "fill-color": ["get", "color"], "fill-opacity": 0.95 },
+      },
+      migArrows.placeBelow || undefined
+    );
   }
 }
 
 function updateMigArc(bundle) {
   ensureMigArrows();
   if (!migArrows) return;
-  if (!bundle || !bundle.from || !bundle.to || !bundle.control) {
-    migArrows.arrows = [];
-    migArrows.jsonData = [];
-    migArrows.updateSource();
+  // always wipe previous geometry first (city switch / local events)
+  clearMigArc();
+  if (!bundle || !bundle.showArrow || !bundle.from || !bundle.to || !bundle.control) {
     return;
   }
-  // white underlay + cinnabar arc (same quadratic points)
   const pts = [bundle.from, bundle.to, bundle.control];
+  const color = ui.accent;
   migArrows.arrows = [
     {
       layout: "quadratic",
-      lineColor: "#FFF8F0",
-      lineWidth: 7,
+      lineColor: color,
+      lineWidth: 3.8,
       points: pts,
-      headScale: [1.35, 1.55],
-    },
-    {
-      layout: "quadratic",
-      lineColor: ui.accent,
-      lineWidth: 3.6,
-      points: pts,
-      headScale: [1.5, 1.85],
+      headScale: [1.45, 1.75],
     },
   ];
-  const nextColors = Array.from(
-    new Set(migArrows.arrows.map((a) => a.lineColor || "black"))
-  );
-  // recreate tail layers if colors changed since first init
-  for (const c of migArrows.lineColors) {
-    const id = `${migArrows.layerIdPrefix}_tails_${c}`;
-    if (map.getLayer(id) && !nextColors.includes(c)) map.removeLayer(id);
-  }
-  migArrows.lineColors = nextColors;
   migArrows.jsonData = migArrows.computeJsonData(migArrows.arrows);
+  ensureMigArcLayers(color);
   migArrows.updateSource();
-  for (const c of migArrows.lineColors) {
-    const id = `${migArrows.layerIdPrefix}_tails_${c}`;
-    if (!map.getLayer(id)) {
-      map.addLayer(
-        {
-          id,
-          source: migArrows.sourceId,
-          filter: ["all", ["==", "kind", "arrow-tail"], ["==", "color", c]],
-          type: "line",
-          paint: {
-            "line-gradient": [
-              "interpolate",
-              ["linear"],
-              ["line-progress"],
-              0,
-              "transparent",
-              0.25,
-              c,
-            ],
-            "line-width": ["get", "width"],
-          },
-        },
-        migArrows.placeBelow || undefined
-      );
-    }
-  }
-  if (!map.getLayer(`${migArrows.layerIdPrefix}_heads`)) {
-    map.addLayer(
-      {
-        id: `${migArrows.layerIdPrefix}_heads`,
-        source: migArrows.sourceId,
-        filter: ["==", "kind", "arrow-head"],
-        type: "fill",
-        paint: { "fill-color": ["get", "color"] },
-      },
-      migArrows.placeBelow || undefined
-    );
-  }
 }
 
 function renderLegend(html) {
@@ -549,7 +566,7 @@ function showBranchLabels() {
 
 function showMigEndLabels(bundle) {
   clearMarkers(migMarkers);
-  if (!bundle.from || !bundle.to) return;
+  if (!bundle || !bundle.showArrow || !bundle.from || !bundle.to) return;
   const fromEl = makeLabel(bundle.fromName, "mig");
   const toEl = makeLabel(bundle.toName, "mig");
   migMarkers.push(
@@ -650,9 +667,9 @@ map.on("load", () => {
     source: "migration",
     paint: {
       "line-color": "#FFF8F0",
-      "line-width": 8,
-      "line-opacity": 0.55,
-      "line-blur": 0.4,
+      "line-width": 6,
+      "line-opacity": 0.45,
+      "line-blur": 0.6,
     },
     layout: { "line-cap": "round", "line-join": "round" },
   });
@@ -864,24 +881,28 @@ function renderCityView(opts = {}) {
   ]);
 
   const ev = selectedCity.events[selectedEventIdx];
+  // wipe previous city arrow before computing the next
+  clearMigration();
   const bundle = migrationBundle(ev, selectedCity.name);
   map.getSource("migration").setData(bundle.line);
   updateMigArc(bundle);
   showCityLabels(selectedCity.id);
   showMigEndLabels(bundle);
 
+  const migLine =
+    bundle.showArrow && (ev.mapLabel || (bundle.fromName + " → " + bundle.toName));
   setStory({
     kicker: "城市个案 · " + selectedCity.name,
     title: ev ? ev.title : selectedCity.name,
     year: ev ? `${yearText(ev.year)} · ${ev.era || ""}` : "",
     body: ev
-      ? `${ev.mapLabel ? "迁徙：" + ev.mapLabel : "迁徙：" + bundle.fromName + " → " + bundle.toName}\n\n${ev.body}`
+      ? `${migLine ? "迁徙：" + migLine + "\n\n" : ""}${ev.body}`
       : (selectedCity.blurb || ""),
   });
 
   renderLegend(
     `<div class="row"><i style="background:#C4B6A4"></i>中国省界（今界示意）</div>
-     <div class="row"><i style="background:${ui.accent}"></i>${ev && ev.mapLabel ? ev.mapLabel : (bundle.fromName + " → " + bundle.toName)}</div>
+     ${bundle.showArrow ? `<div class="row"><i style="background:${ui.accent}"></i>${migLine}</div>` : `<div class="row"><i style="background:${ui.mutedInk}"></i>本地演变（无迁徙弧）</div>`}
      <div class="row"><i style="background:${ui.cityStroke}"></i>${selectedCity.name} 轮廓</div>`
   );
   renderTimeAxisCity();
@@ -918,6 +939,7 @@ function syncCityPanel() {
 
 function pickCity(id, autoplay) {
   stopCityPlay();
+  clearMigration();
   selectedCity = data.cities.find((c) => c.id === id) || selectedCity;
   selectedEventIdx = 0;
   syncCityPanel();
