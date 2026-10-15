@@ -405,6 +405,21 @@ function subListHtml(parentId) {
   );
 }
 
+function contactNoteHtml(br) {
+  if (!br || !br.contactNote) return "";
+  return `<strong>嵌套与接触</strong><div style="margin-top:4px">${br.contactNote}</div>`;
+}
+
+function islandStoryExtra(isl) {
+  if (!isl) return "";
+  const bits = [];
+  if (isl.kind) bits.push(`<div style="margin-top:2px">类型：${isl.kind}</div>`);
+  if (isl.period) bits.push(`<div style="margin-top:2px">时段：${isl.period}</div>`);
+  if (isl.area) bits.push(`<div style="margin-top:2px">范围：${isl.area}</div>`);
+  if (isl.note) bits.push(`<div style="margin-top:4px;opacity:.85;font-size:0.82rem">${isl.note}</div>`);
+  return bits.join("");
+}
+
 function branchCentroids() {
   return data.branchGeoJSON.features.map((f) => {
     const coords = [];
@@ -1089,6 +1104,26 @@ map.on("load", () => {
     map.getCanvas().style.cursor = "";
     popup.remove();
   });
+  map.on("click", "islands-fill", (e) => {
+    if (mode !== "branch") return;
+    const f = e.features && e.features[0];
+    if (!f) return;
+    const isl = (data.dialectIslands || []).find((x) => x.id === f.properties.id);
+    const title = (isl && isl.name) || f.properties.name;
+    const body = (isl && isl.summary) || f.properties.summary || f.properties.kind || "";
+    setStory({
+      kicker: "方言岛 / 接触带",
+      title,
+      year: (isl && isl.period) || "",
+      body,
+      extraHtml: islandStoryExtra(isl || f.properties),
+    });
+    setMapInfo({
+      kicker: "方言岛 / 接触带",
+      title,
+      sub: (isl && isl.kind) || f.properties.kind || "示意范围",
+    });
+  });
   map.on("click", "cities-circle", (e) => {
     if (mode !== "city" && mode !== "era") return;
     const f = e.features && e.features[0];
@@ -1204,7 +1239,8 @@ function renderBranchLegend() {
         : "") +
       (!selectedBranchId
         ? `<div class="row"><i style="background:#8B3A3A;border:1px dashed ${ui.accent}"></i>方言岛色块（虚线边）</div>
-      <div class="row"><i style="background:#72B7B2;border:1px dashed #6E6A64"></i>嵌岛示意</div>`
+      <div class="row"><i style="background:#72B7B2;border:1px dashed #6E6A64"></i>嵌岛示意</div>
+      <div class="row"><i style="background:#C47865;border:1px dashed #6E6A64"></i>蛮话/闽语接触带（示意）</div>`
         : "") +
       note
   );
@@ -1239,7 +1275,7 @@ function renderBranchView() {
             title: f.properties.name,
             year: "",
             body: f.properties.summary || shortTip(f.properties),
-            extraHtml: [strataSum, subListHtml(selectedBranchId)].filter(Boolean).join('<div style="height:8px"></div>'),
+            extraHtml: [strataSum, subListHtml(selectedBranchId), contactNoteHtml(br)].filter(Boolean).join('<div style="height:8px"></div>'),
           });
         },
       });
@@ -1276,7 +1312,7 @@ function selectBranch(id) {
       const strataSum = br && br.strataSummary
         ? `<strong>层次摘要</strong><div style="margin-top:4px">${br.strataSummary}</div>`
         : "";
-      const extras = [strataSum, subListHtml(id)].filter(Boolean).join('<div style="height:8px"></div>');
+      const extras = [strataSum, subListHtml(id), contactNoteHtml(br)].filter(Boolean).join('<div style="height:8px"></div>');
       setStory({
         kicker: "六片分支",
         title: f.properties.name,
@@ -1300,7 +1336,7 @@ function selectBranch(id) {
             title: f.properties.name,
             year: "",
             body: f.properties.summary || shortTip(f.properties),
-            extraHtml: [strataSum2, subListHtml(id)].filter(Boolean).join('<div style="height:8px"></div>'),
+            extraHtml: [strataSum2, subListHtml(id), contactNoteHtml(br2)].filter(Boolean).join('<div style="height:8px"></div>'),
           });
         },
       });
