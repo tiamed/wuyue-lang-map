@@ -363,6 +363,7 @@ function applySubBranchMode() {
       showAll ? 0.14 : opacityExprForBranches(null, selectedBranchId)
     );
   }
+  if (inBranch) applyIslandFilters();
 }
 
 function subsVisible() {
@@ -429,11 +430,37 @@ function islandFillColorExpr() {
   return expr;
 }
 
+const ISLAND_LAYER_IDS = ["islands-fill", "islands-line-solid", "islands-line-dash"];
+
+function hangzhouIslandShouldHide() {
+  // 片层已显示杭州小片时隐藏同界方言岛，避免双描边
+  if (mode !== "branch") return false;
+  if (selectedBranchId === "branch-taihu") return true;
+  if (showSubBranches && !selectedBranchId) return true;
+  return false;
+}
+
+function applyIslandFilters() {
+  if (!map.getLayer("islands-fill")) return;
+  const base = hangzhouIslandShouldHide()
+    ? ["!=", ["get", "id"], "island-hangzhou"]
+    : null;
+  map.setFilter("islands-fill", base);
+  const isBand = ["==", ["get", "outlineStyle"], "branch-match"];
+  const solidFilter = base ? ["all", base, isBand] : isBand;
+  const dashFilter = base
+    ? ["all", base, ["!=", ["get", "outlineStyle"], "branch-match"]]
+    : ["!=", ["get", "outlineStyle"], "branch-match"];
+  if (map.getLayer("islands-line-solid")) map.setFilter("islands-line-solid", solidFilter);
+  if (map.getLayer("islands-line-dash")) map.setFilter("islands-line-dash", dashFilter);
+}
+
 function setIslandLayersVisible(on) {
   const vis = on ? "visible" : "none";
-  ["islands-fill", "islands-line"].forEach((id) => {
+  ISLAND_LAYER_IDS.forEach((id) => {
     if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", vis);
   });
+  if (on) applyIslandFilters();
 }
 
 function subBranchesForParent(parentId) {
@@ -1010,22 +1037,44 @@ map.on("load", () => {
       "fill-color": islandFillColorExpr(),
       "fill-opacity": [
         "case",
+        ["==", ["get", "outlineStyle"], "branch-match"],
+        0.46,
         ["==", ["get", "emphasis"], true],
         0.38,
         0.26,
       ],
-      "fill-outline-color": "#6E6A64",
     },
   });
+  // 接触带：实线轮廓（向小片靠拢）
   map.addLayer({
-    id: "islands-line",
+    id: "islands-line-solid",
     type: "line",
     source: "islands",
+    filter: ["==", ["get", "outlineStyle"], "branch-match"],
     layout: {
       "line-sort-key": ["-", 0, ["get", "_area"]],
     },
     paint: {
-      // 统一虚线轮廓色块；强调项略加深
+      "line-color": [
+        "case",
+        ["==", ["get", "emphasis"], true],
+        ui.accent,
+        "#5A554F",
+      ],
+      "line-width": 1.6,
+      "line-opacity": 0.92,
+    },
+  });
+  // 微观岛：虚线
+  map.addLayer({
+    id: "islands-line-dash",
+    type: "line",
+    source: "islands",
+    filter: ["!=", ["get", "outlineStyle"], "branch-match"],
+    layout: {
+      "line-sort-key": ["-", 0, ["get", "_area"]],
+    },
+    paint: {
       "line-color": [
         "case",
         ["==", ["get", "emphasis"], true],
@@ -1299,7 +1348,7 @@ function renderBranchLegend() {
       (!selectedBranchId
         ? `<div class="row"><i style="background:#8B3A3A;border:1px dashed ${ui.accent}"></i>方言岛色块（虚线边）</div>
       <div class="row"><i style="background:#72B7B2;border:1px dashed #6E6A64"></i>嵌岛示意</div>
-      <div class="row"><i style="background:#C47865;border:1px dashed #6E6A64"></i>蛮话/闽语接触带（示意）</div>`
+      <div class="row"><i style="background:#C47865;border:1px solid #5A554F"></i>蛮话/闽语接触带（实线示意）</div>`
         : "") +
       note
   );
