@@ -369,6 +369,56 @@ function subsVisible() {
   return mode === "branch" && (!!selectedBranchId || showSubBranches);
 }
 
+function featureBBoxArea(f) {
+  const coords = [];
+  const walk = (c) => {
+    if (!Array.isArray(c) || !c.length) return;
+    if (typeof c[0] === "number") {
+      coords.push(c);
+      return;
+    }
+    c.forEach(walk);
+  };
+  if (f && f.geometry) walk(f.geometry.coordinates);
+  if (!coords.length) return Number.POSITIVE_INFINITY;
+  let minX = coords[0][0], maxX = coords[0][0], minY = coords[0][1], maxY = coords[0][1];
+  for (const [x, y] of coords) {
+    if (x < minX) minX = x;
+    if (x > maxX) maxX = x;
+    if (y < minY) minY = y;
+    if (y > maxY) maxY = y;
+  }
+  return Math.max(1e-12, (maxX - minX) * (maxY - minY));
+}
+
+/** 大面先画、小面后画；并写入 _area 供叠层命中挑最小面 */
+function islandsGeoJSONSorted() {
+  const src = data.islandGeoJSON || { type: "FeatureCollection", features: [] };
+  const features = (src.features || []).map((f) => {
+    const area = featureBBoxArea(f);
+    return {
+      ...f,
+      properties: { ...(f.properties || {}), _area: area },
+    };
+  });
+  features.sort((a, b) => (b.properties._area || 0) - (a.properties._area || 0));
+  return { type: "FeatureCollection", features };
+}
+
+function pickTopIslandFeature(feats) {
+  if (!feats || !feats.length) return null;
+  let best = feats[0];
+  let bestArea = featureBBoxArea(best);
+  for (let i = 1; i < feats.length; i++) {
+    const a = featureBBoxArea(feats[i]);
+    if (a < bestArea) {
+      best = feats[i];
+      bestArea = a;
+    }
+  }
+  return best;
+}
+
 function islandFillColorExpr() {
   const expr = ["match", ["get", "id"]];
   const feats = (data.islandGeoJSON && data.islandGeoJSON.features) || [];
@@ -946,27 +996,36 @@ map.on("load", () => {
   });
   map.addSource("islands", {
     type: "geojson",
-    data: data.islandGeoJSON || { type: "FeatureCollection", features: [] },
+    data: islandsGeoJSONSorted(),
   });
   map.addLayer({
     id: "islands-fill",
     type: "fill",
     source: "islands",
+    // 面积越小 sort-key 越高，小圈画在大接触带之上
+    layout: {
+      "fill-sort-key": ["-", 0, ["get", "_area"]],
+    },
     paint: {
       "fill-color": islandFillColorExpr(),
       "fill-opacity": [
         "case",
         ["==", ["get", "emphasis"], true],
-        0.42,
-        0.28,
+        0.38,
+        0.26,
       ],
+      "fill-outline-color": "#6E6A64",
     },
   });
   map.addLayer({
     id: "islands-line",
     type: "line",
     source: "islands",
+    layout: {
+      "line-sort-key": ["-", 0, ["get", "_area"]],
+    },
     paint: {
+      // 统一虚线轮廓色块；强调项略加深
       "line-color": [
         "case",
         ["==", ["get", "emphasis"], true],
@@ -976,11 +1035,11 @@ map.on("load", () => {
       "line-width": [
         "case",
         ["==", ["get", "emphasis"], true],
-        2,
-        1.2,
+        1.8,
+        1.4,
       ],
-      "line-dasharray": [1.8, 1.4],
-      "line-opacity": 0.9,
+      "line-dasharray": [1.6, 1.2],
+      "line-opacity": 0.95,
     },
   });
   map.addLayer({
@@ -1086,7 +1145,7 @@ map.on("load", () => {
   map.on("mousemove", "islands-fill", (e) => {
     if (mode !== "branch") return;
     map.getCanvas().style.cursor = "pointer";
-    const f = e.features && e.features[0];
+    const f = pickTopIslandFeature(e.features);
     if (!f) return;
     const isl = (data.dialectIslands || []).find((x) => x.id === f.properties.id);
     const strataLine = isl && isl.strata && isl.strata.length
@@ -1106,7 +1165,7 @@ map.on("load", () => {
   });
   map.on("click", "islands-fill", (e) => {
     if (mode !== "branch") return;
-    const f = e.features && e.features[0];
+    const f = pickTopIslandFeature(e.features);
     if (!f) return;
     const isl = (data.dialectIslands || []).find((x) => x.id === f.properties.id);
     const title = (isl && isl.name) || f.properties.name;
