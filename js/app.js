@@ -112,7 +112,14 @@ function buildTimeAxisStatic() {
     })
     .join("");
 
-  const dynasties = timelineMeta.dynasties || [];
+  // Color bands follow the seven era periods, not a finer dynasty list.
+  const dynasties = (data.eras || []).length
+    ? data.eras.map((era) => ({
+        label: String(era.label || "").split("：")[0] || era.dynastyLabel || "",
+        yearStart: era.yearStart,
+        yearEnd: era.yearEnd,
+      }))
+    : timelineMeta.dynasties || [];
   timeAxisDynasties.innerHTML = dynasties
     .map((d, i) => {
       const left = yearToPct(d.yearStart);
@@ -1749,12 +1756,15 @@ function renderEraView() {
   const strataBlurb = era.strataBlurb
     ? `<strong>层次</strong><div style="margin-top:4px">${era.strataBlurb}</div>`
     : "";
+  const axisNote = timelineMeta.narrationNote
+    ? `<p class="hint" style="margin-top:4px">${timelineMeta.narrationNote}</p>`
+    : "";
   setStory({
     kicker: "长时段",
     title: era.label,
     year: `${yearText(era.yearStart)} — ${yearText(era.yearEnd)}${era.dynastyLabel ? " · " + era.dynastyLabel : ""}`,
     body: era.background || era.summary,
-    extraHtml: [strataBlurb, dist].filter(Boolean).join('<div style="height:8px"></div>'),
+    extraHtml: [strataBlurb, dist, axisNote].filter(Boolean).join('<div style="height:8px"></div>'),
   });
   const distOne = (era.distribution || "").split(/[。；;]/)[0] || "";
   const focusLabels = (era.stratumFocus || []).map(stratumTypeLabel).filter(Boolean);
@@ -1841,7 +1851,8 @@ function renderEraView() {
     .filter((f) => focusIds.includes(f.properties.id))
     .map((f) => f.properties.name);
   renderLegend(
-    `<div class="row"><i style="background:${ui.accent}"></i>本段亮起：${names.join("、") || "—"}</div>`
+    `<div class="row"><i style="background:${ui.accent}"></i>本段亮起：${names.join("、") || "—"}</div>` +
+      `<div class="row"><i style="background:${ui.cityStroke}"></i>城廓为今市界示意，非历史政区</div>`
   );
   renderTimeAxisEra();
   fitWuYue(400);
