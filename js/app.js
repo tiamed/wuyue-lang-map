@@ -1,3 +1,5 @@
+import { mountJiangshanOverlay } from "./jiangshan-overlay.mjs";
+
 const data = await fetch("data/wuyue-map-data.json").then((r) => r.json());
 const dataVer = (data.meta && data.meta.version) || "";
 const subEl = document.querySelector(".top .sub");
@@ -70,6 +72,7 @@ let selectedEventIdx = 0;
 let eraIdx = 4;
 let playTimer = null;
 let eraPlayTimer = null;
+let jiangshanOverlay = null;
 let followMigration = false;
 let showSubBranches = false;
 let cityFrameReady = false;
@@ -1250,6 +1253,12 @@ map.on("load", () => {
   buildCityChips();
   buildEraTimeline();
   buildTimeAxisStatic();
+  // Debug prefecture faces sit under city outlines and do not replace dialect geometry.
+  jiangshanOverlay = mountJiangshanOverlay({
+    map,
+    getEra: () => data.eras[eraIdx],
+    beforeLayerId: "city-outline-fill",
+  });
   setMode("branch");
 });
 
@@ -1738,6 +1747,7 @@ function setEra(i) {
   });
   eraProgressBar.style.width = `${((eraIdx + 1) / data.eras.length) * 100}%`;
   renderEraView();
+  if (jiangshanOverlay) jiangshanOverlay.sync();
 }
 
 function renderEraView() {
@@ -1957,6 +1967,7 @@ function setMode(next) {
       renderCityView({ camera: "frame" });
       // 进层不自动播，等点「播放」
     }
+    if (next !== "era" && jiangshanOverlay) jiangshanOverlay.sync();
   };
   applyView();
 }

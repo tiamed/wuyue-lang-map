@@ -11,7 +11,7 @@
   <header class="top">
     <div>
       <h1>吴越地区语言变迁</h1>
-      <p class="sub">MapLibre · 示意行政区聚合，非精确同言线 · 数据 v0.8.18 · 今界示意 · 江南风</p>
+      <p class="sub">MapLibre · 示意行政区聚合，非精确同言线 · 数据 v0.8.19 · 今界示意 · 江南风</p>
     </div>
     <nav class="layers" id="layerTabs">
       <button type="button" data-layer="era">长时段</button>
@@ -79,6 +79,16 @@
     <section class="map-wrap">
       <div id="map" aria-label="吴越语言地图"></div>
       <div id="mapHud" class="map-hud">
+        <div id="jiangshanDebug" class="jiangshan-debug" hidden aria-label="历史府界对照（调试）">
+          <label class="follow-toggle jiangshan-toggle" for="jiangshanToggle">
+            <input type="checkbox" id="jiangshanToggle" />
+            府界对照
+          </label>
+          <p id="jiangshanStatus" class="jiangshan-status"></p>
+          <div id="jiangshanYears" class="jiangshan-years" hidden></div>
+          <p class="jiangshan-license">本地调试 · 默认关 · CHGIS 府面仅学术非商用 · 不进发布几何</p>
+        </div>
+        <div id="jiangshanLegend" class="legend jiangshan-legend" hidden></div>
         <button type="button" id="mapInfo" class="map-info" aria-live="polite"></button>
         <div id="legend" class="legend"></div>
       </div>

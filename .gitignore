@@ -1,2 +1,12 @@
 node_modules/
 .DS_Store
+
+# CHGIS / jiangshan prefecture faces are academic and non-commercial.
+# They are a local debug overlay only and must not ship on GitHub Pages.
+# Drop the pack into local/jiangshan-overlay/ (see that folder's README).
+local/jiangshan-overlay/*
+!local/jiangshan-overlay/README.md
+# Mistaken extract of the pack at the repo root or under local/ (Pages would publish it).
+/jiangshan-overlay/
+/jiangshan-era-prefecture-names.md
+local/jiangshan-era-prefecture-names.md
